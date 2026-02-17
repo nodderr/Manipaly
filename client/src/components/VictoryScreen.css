@@ -1,0 +1,81 @@
+.victory-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000;
+  animation: overlay-in 0.3s ease-out;
+}
+
+.victory-dialog {
+  width: 380px; max-width: 95vw;
+  background: var(--bg-panel, #fff);
+  border: 3px solid gold;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.3);
+  animation: victory-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes victory-pop {
+  0%   { opacity: 0; transform: scale(0.5) rotate(-5deg); }
+  70%  { opacity: 1; transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.victory__confetti { font-size: 48px; margin-bottom: 8px; animation: confetti-bounce 1s ease infinite; }
+
+@keyframes confetti-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.victory__title {
+  margin: 0; font-size: 28px; font-weight: 900;
+  color: gold; text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.victory__winner {
+  font-size: 24px; font-weight: 800;
+  color: var(--text-primary); margin: 8px 0 2px;
+}
+
+.victory__subtitle {
+  font-size: 16px; color: var(--text-muted); margin-bottom: 20px;
+}
+
+.victory__standings {
+  text-align: left; margin-bottom: 20px;
+  border: 1px solid var(--border-light); border-radius: 8px;
+  overflow: hidden;
+}
+
+.victory__standings-title {
+  padding: 8px 12px; font-size: 12px; font-weight: 700;
+  text-transform: uppercase; color: var(--text-muted);
+  background: var(--bg-card); border-bottom: 1px solid var(--border-light);
+}
+
+.victory__player {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.victory__player:last-child { border-bottom: none; }
+.victory__player--bankrupt { opacity: 0.5; }
+
+.victory__rank { font-size: 14px; font-weight: 800; width: 28px; color: var(--text-primary); }
+.victory__dot { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+.victory__name { flex: 1; font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.victory__cash { font-size: 14px; font-weight: 700; color: #1fb25a; }
+
+.victory__btn {
+  width: 100%; padding: 12px;
+  background: #c41e3a; color: #fff;
+  border: 2px solid #a51830; border-radius: 8px;
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: background 0.15s;
+}
+
+.victory__btn:hover { background: #a51830; }

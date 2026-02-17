@@ -1,0 +1,89 @@
+.auction-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1100;
+  animation: overlay-in 0.2s ease-out;
+}
+
+.auction-dialog {
+  width: 340px; max-width: 95vw;
+  background: var(--bg-panel, #fff);
+  border: 2px solid var(--border-strong, #333);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  animation: card-pop 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.auction__title {
+  margin: 0 0 6px; font-size: 20px; font-weight: 800;
+  color: var(--text-primary);
+}
+
+.auction__property {
+  font-size: 18px; font-weight: 700;
+  color: #c41e3a; margin-bottom: 2px;
+}
+
+.auction__price {
+  font-size: 13px; color: var(--text-muted); margin-bottom: 14px;
+}
+
+/* Timer */
+.auction__timer-track {
+  width: 100%; height: 8px;
+  background: var(--bg-card, #eee);
+  border-radius: 4px; overflow: hidden; margin-bottom: 4px;
+}
+
+.auction__timer-fill {
+  height: 100%; background: linear-gradient(90deg, #c41e3a, #f97316);
+  border-radius: 4px; transition: width 0.1s linear;
+}
+
+.auction__time-label {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted); margin-bottom: 12px;
+}
+
+/* Current bid */
+.auction__current {
+  font-size: 16px; color: var(--text-primary); margin-bottom: 14px;
+}
+
+.auction__current strong { color: #1fb25a; }
+.auction__no-bids { color: var(--text-muted); font-style: italic; }
+
+/* Bid input */
+.auction__bid-row { display: flex; gap: 8px; margin-bottom: 10px; }
+
+.auction__bid-input {
+  flex: 1; padding: 8px 10px;
+  border: 2px solid var(--border-light); border-radius: 6px;
+  font-family: inherit; font-size: 16px; font-weight: 700;
+  background: var(--bg-card); color: var(--text-primary);
+  text-align: center;
+}
+
+.auction__bid-btn {
+  padding: 8px 16px; background: #1fb25a; color: #fff;
+  border: 2px solid #1a9a4e; border-radius: 6px;
+  font-family: inherit; font-size: 14px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: background 0.15s;
+}
+
+.auction__bid-btn:hover:not(:disabled) { background: #179c4b; }
+.auction__bid-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Quick bids */
+.auction__quick-bids { display: flex; gap: 6px; justify-content: center; }
+
+.auction__quick-btn {
+  padding: 5px 12px; border: 1px solid var(--border-light);
+  border-radius: 4px; font-size: 12px; font-weight: 700;
+  background: var(--bg-card); color: var(--text-primary);
+  cursor: pointer; transition: background 0.15s;
+}
+
+.auction__quick-btn:hover { background: var(--bg-hover); }

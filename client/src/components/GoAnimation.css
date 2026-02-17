@@ -1,0 +1,35 @@
+.go-anim {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 900;
+  overflow: hidden;
+}
+
+.go-anim__bill {
+  position: absolute;
+  bottom: -40px;
+  font-size: 32px;
+  animation: fly-up 1.8s ease-out forwards;
+}
+
+@keyframes fly-up {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+  60%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-100vh) rotate(var(--rotation, 20deg)); }
+}
+
+.go-anim__text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px; font-weight: 900;
+  color: #1fb25a;
+  text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  animation: go-pulse 1.5s ease-out forwards;
+}
+
+@keyframes go-pulse {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+  60%  { transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-30px); }
+}

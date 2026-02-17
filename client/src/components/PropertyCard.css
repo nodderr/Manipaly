@@ -3,20 +3,32 @@
 .propcard-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: overlay-in 0.2s ease-out;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .propcard {
   width: 280px;
-  background: #fff;
-  border: 3px solid #333;
-  border-radius: 4px;
+  background: var(--bg-panel, #fff);
+  border: 3px solid var(--border-strong, #333);
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  animation: card-pop 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes card-pop {
+  from { opacity: 0; transform: scale(0.9) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 /* ── Header ────────────────────────────────────────────────────── */
@@ -63,7 +75,7 @@
   align-items: center;
   padding: 4px 0;
   font-size: 12px;
-  color: #333;
+  color: var(--text-secondary, #333);
 }
 
 .propcard__row--price {
@@ -78,6 +90,10 @@
   font-weight: 700;
 }
 
+[data-theme="dark"] .propcard__row--highlight {
+  background: #3a3520;
+}
+
 .propcard__row--owner {
   font-weight: 700;
   color: #c41e3a;
@@ -85,7 +101,7 @@
 
 .propcard__val {
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary, #222);
 }
 
 .propcard__val--small {
@@ -97,7 +113,7 @@
 
 .propcard__divider {
   height: 1px;
-  background: #e0e0d8;
+  background: var(--border-light, #e0e0d8);
   margin: 6px 0;
 }
 
@@ -106,17 +122,17 @@
   display: block;
   width: 100%;
   padding: 10px;
-  background: #f5f5f0;
+  background: var(--bg-card, #f5f5f0);
   border: none;
-  border-top: 2px solid #e0e0d8;
+  border-top: 2px solid var(--border-light, #e0e0d8);
   font-family: inherit;
   font-size: 13px;
   font-weight: 700;
-  color: #555;
+  color: var(--text-muted, #555);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.15s;
 }
 
 .propcard__close:hover {
-  background: #eaeae0;
+  background: var(--bg-hover, #eaeae0);
 }

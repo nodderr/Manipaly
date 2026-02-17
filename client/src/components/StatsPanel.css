@@ -1,0 +1,55 @@
+.stats-panel {
+  margin-top: 8px;
+}
+
+.stats__toggle {
+  width: 100%; padding: 8px 12px;
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border-light); border-radius: 6px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; text-align: left; transition: background 0.15s;
+}
+
+.stats__toggle:hover { background: var(--bg-hover); }
+
+.stats__body {
+  border: 1px solid var(--border-light); border-top: none;
+  border-radius: 0 0 6px 6px; overflow: hidden;
+  animation: stats-open 0.2s ease-out;
+}
+
+@keyframes stats-open {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 300px; }
+}
+
+.stats__table {
+  width: 100%; border-collapse: collapse;
+  font-size: 12px;
+}
+
+.stats__table th {
+  padding: 6px 8px; text-align: left;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  color: var(--text-muted); background: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.stats__table td {
+  padding: 6px 8px; color: var(--text-primary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.stats__row--me td {
+  background: rgba(31, 178, 90, 0.08);
+  font-weight: 600;
+}
+
+.stats__dot {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; margin-right: 6px;
+  border: 1px solid rgba(0,0,0,0.2); vertical-align: middle;
+}
+
+.stats__money { color: #1fb25a; font-weight: 700; }
+.stats__networth { font-weight: 800; color: var(--text-primary); }

@@ -1,4 +1,4 @@
-/* ─── Global Styles — Clean & Functional ───────────────────────── */
+/* ─── Global Styles ────────────────────────────────────────────── */
 
 *,
 *::before,
@@ -8,18 +8,52 @@
   box-sizing: border-box;
 }
 
-:root {
+/* ── Light Theme (default) ─────────────────────────────────────── */
+:root,
+[data-theme="light"] {
   font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --bg-main:          #f0f0e8;
+  --bg-panel:         #ffffff;
+  --bg-card:          #f9f9f5;
+  --bg-hover:         #f0f0e8;
+  --bg-board-center:  #d5eac2;
+  --bg-square:        #d5eac2;
+
+  --text-primary:     #222;
+  --text-secondary:   #333;
+  --text-muted:       #888;
+
+  --border-strong:    #333;
+  --border-light:     #e0e0d8;
+}
+
+/* ── Dark Theme ────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-main:          #1a1a2e;
+  --bg-panel:         #16213e;
+  --bg-card:          #1a2744;
+  --bg-hover:         #1e2f50;
+  --bg-board-center:  #1a3a2a;
+  --bg-square:        #2a3a2a;
+
+  --text-primary:     #e8e8e8;
+  --text-secondary:   #ccc;
+  --text-muted:       #888;
+
+  --border-strong:    #444;
+  --border-light:     #333;
 }
 
 html, body {
   min-height: 100vh;
-  background: #f0f0e8;
-  color: #222;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  transition: background 0.3s, color 0.3s;
 }
 
 #root {

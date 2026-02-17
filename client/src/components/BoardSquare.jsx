@@ -16,7 +16,7 @@ const GROUP_COLORS = {
   utility:   '#000',
 };
 
-// Icons / symbols for special types
+// Icons for special types
 const TYPE_ICONS = {
   chance:   '?',
   chest:    '🏦',
@@ -26,13 +26,25 @@ const TYPE_ICONS = {
   corner:   '',
 };
 
-export default function BoardSquare({ space, players, edge, owner, onClick }) {
+// House display helper
+function HouseIcons({ count }) {
+  if (!count || count <= 0) return null;
+  if (count === 5) return <span className="sq__houses sq__houses--hotel" title="Hotel">🏨</span>;
+  return (
+    <span className="sq__houses" title={`${count} house(s)`}>
+      {'🏠'.repeat(count)}
+    </span>
+  );
+}
+
+export default function BoardSquare({ space, players, edge, owner, ownerColor, onClick }) {
   const groupColor = GROUP_COLORS[space.group] || null;
   const isCorner = space.type === 'corner';
   const isProperty = space.type === 'property';
   const icon = TYPE_ICONS[space.type] || '';
+  const isMortgaged = owner?.mortgaged;
 
-  // Corner cells get a different layout
+  // Corner cells
   if (isCorner) {
     return (
       <div className={`sq sq--corner sq--${edge}`} data-id={space.id}>
@@ -56,13 +68,19 @@ export default function BoardSquare({ space, players, edge, owner, onClick }) {
 
   const clickable = space.type === 'property' || space.type === 'railroad' || space.type === 'utility';
 
+  // Ownership border style
+  const ownerBorderStyle = ownerColor ? {
+    boxShadow: `inset 0 0 0 2px ${ownerColor}`,
+  } : {};
+
   return (
     <div
-      className={`sq sq--${edge} ${clickable ? 'sq--clickable' : ''}`}
+      className={`sq sq--${edge} ${clickable ? 'sq--clickable' : ''} ${isMortgaged ? 'sq--mortgaged' : ''}`}
       data-id={space.id}
       onClick={clickable && onClick ? () => onClick(space.id) : undefined}
+      style={ownerBorderStyle}
     >
-      {/* Color band — on the inner edge */}
+      {/* Color band */}
       {groupColor && (
         <div
           className={`sq__color sq__color--${edge}`}
@@ -73,6 +91,9 @@ export default function BoardSquare({ space, players, edge, owner, onClick }) {
       <div className="sq__body">
         <span className="sq__name">{space.name}</span>
 
+        {/* House icons */}
+        {owner && <HouseIcons count={owner.houses} />}
+
         {!isProperty && icon && (
           <span className="sq__icon">{icon}</span>
         )}
@@ -81,8 +102,12 @@ export default function BoardSquare({ space, players, edge, owner, onClick }) {
           <span className="sq__price">${space.price}</span>
         )}
 
-        {owner && (
-          <span className="sq__owned" title={`Owned by ${owner.ownerName}`}>●</span>
+        {owner && !isMortgaged && (
+          <span className="sq__owned" style={{ color: ownerColor || '#c41e3a' }} title={`Owned by ${owner.ownerName}`}>●</span>
+        )}
+
+        {isMortgaged && (
+          <span className="sq__mortgaged-label" title="Mortgaged">Ⓜ</span>
         )}
       </div>
 

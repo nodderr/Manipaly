@@ -2,17 +2,18 @@
 
 .sq {
   position: relative;
-  background: #d5eac2;
-  border: 1px solid #333;
+  background: var(--bg-square, #d5eac2);
+  border: 1px solid var(--border-strong, #333);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: 'Arial', 'Helvetica', sans-serif;
+  transition: background 0.3s;
 }
 
 /* ── Corner Squares ────────────────────────────────────────────── */
 .sq--corner {
-  background: #d5eac2;
+  background: var(--bg-square, #d5eac2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,7 +33,7 @@
 .sq__corner-name {
   font-size: 12px;
   font-weight: 800;
-  color: #222;
+  color: var(--text-primary, #222);
   text-align: center;
   text-transform: uppercase;
   line-height: 1.2;
@@ -46,7 +47,7 @@
 .sq__corner-sub {
   font-size: 10px;
   font-weight: 700;
-  color: #555;
+  color: var(--text-muted, #555);
   text-transform: uppercase;
 }
 
@@ -56,37 +57,10 @@
   z-index: 1;
 }
 
-/* Bottom row: color band at top (inner edge) */
-.sq__color--bottom {
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-}
-
-/* Top row: color band at bottom (inner edge) */
-.sq__color--top {
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 20px;
-}
-
-/* Left column: color band on right (inner edge) */
-.sq__color--left {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 20px;
-}
-
-/* Right column: color band on left (inner edge) */
-.sq__color--right {
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 20px;
-}
+.sq__color--bottom { top: 0; left: 0; right: 0; height: 20px; }
+.sq__color--top    { bottom: 0; left: 0; right: 0; height: 20px; }
+.sq__color--left   { top: 0; right: 0; bottom: 0; width: 20px; }
+.sq__color--right  { top: 0; left: 0; bottom: 0; width: 20px; }
 
 /* ── Body Content ──────────────────────────────────────────────── */
 .sq__body {
@@ -104,7 +78,7 @@
 .sq__name {
   font-size: 9px;
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary, #222);
   text-align: center;
   line-height: 1.15;
   word-break: break-word;
@@ -120,7 +94,7 @@
 .sq__price {
   font-size: 9px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-secondary, #333);
   margin-top: auto;
 }
 
@@ -130,23 +104,13 @@
 }
 
 .sq--clickable:hover {
-  filter: brightness(0.95);
+  filter: brightness(0.93);
 }
 
-/* ── Side columns: rotate text for classic feel ─────────────── */
-.sq--left .sq__body {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-}
-
-.sq--right .sq__body {
-  writing-mode: vertical-rl;
-}
-
-/* ── Top row: upside-down text like classic board ───────────── */
-.sq--top .sq__body {
-  transform: rotate(180deg);
-}
+/* ── Side columns: rotate text ──────────────────────────────────── */
+.sq--left .sq__body  { writing-mode: vertical-rl; transform: rotate(180deg); }
+.sq--right .sq__body { writing-mode: vertical-rl; }
+.sq--top .sq__body   { transform: rotate(180deg); }
 
 /* ── Player Tokens ─────────────────────────────────────────────── */
 .sq__tokens {
@@ -162,6 +126,37 @@
 /* ── Ownership Indicator ───────────────────────────────────────── */
 .sq__owned {
   font-size: 10px;
+  color: #c41e3a;
+  line-height: 1;
+}
+
+/* ── House Icons ───────────────────────────────────────────────── */
+.sq__houses {
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.sq__houses--hotel {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+/* ── Mortgaged ─────────────────────────────────────────────────── */
+.sq--mortgaged {
+  opacity: 0.55;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-square, #d5eac2),
+    var(--bg-square, #d5eac2) 4px,
+    rgba(0,0,0,0.06) 4px,
+    rgba(0,0,0,0.06) 6px
+  ) !important;
+}
+
+.sq__mortgaged-label {
+  font-size: 11px;
+  font-weight: 800;
   color: #c41e3a;
   line-height: 1;
 }

@@ -10,7 +10,7 @@
 
 .accordion__empty {
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-muted);
   font-style: italic;
   text-align: center;
   padding: 10px;
@@ -23,61 +23,58 @@
   gap: 8px;
   width: 100%;
   padding: 7px 10px;
-  background: #f9f9f5;
-  border: 1px solid #e0e0d8;
-  border-radius: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
   cursor: pointer;
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
   text-align: left;
-  transition: background 0.1s;
+  transition: background 0.15s;
 }
 
-.accordion__header:hover {
-  background: #f0f0e8;
-}
+.accordion__header:hover { background: var(--bg-hover); }
 
 .accordion__header--open {
-  border-radius: 3px 3px 0 0;
+  border-radius: 6px 6px 0 0;
   border-bottom-color: transparent;
-  background: #f0f0e8;
+  background: var(--bg-hover);
 }
 
 .accordion__swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
+  width: 14px; height: 14px;
+  border-radius: 3px;
   border: 1px solid rgba(0,0,0,0.2);
   flex-shrink: 0;
 }
 
-.accordion__label {
-  flex: 1;
-}
+.accordion__label { flex: 1; }
 
 .accordion__count {
-  font-size: 10px;
-  font-weight: 600;
-  color: #888;
-  background: #e8e8e0;
+  font-size: 10px; font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-hover);
   border-radius: 8px;
   padding: 1px 6px;
 }
 
-.accordion__chevron {
-  font-size: 10px;
-  color: #888;
-}
+.accordion__chevron { font-size: 10px; color: var(--text-muted); }
 
 /* ── Group Body ────────────────────────────────────────────────── */
 .accordion__body {
-  border: 1px solid #e0e0d8;
+  border: 1px solid var(--border-light);
   border-top: none;
-  border-radius: 0 0 3px 3px;
-  background: #fff;
+  border-radius: 0 0 6px 6px;
+  background: var(--bg-panel);
   overflow: hidden;
+  animation: accordion-open 0.2s ease-out;
+}
+
+@keyframes accordion-open {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 300px; }
 }
 
 .accordion__item {
@@ -87,48 +84,31 @@
   padding: 6px 10px;
   cursor: pointer;
   transition: background 0.1s;
-  border-bottom: 1px solid #f0f0e8;
+  border-bottom: 1px solid var(--border-light);
 }
 
-.accordion__item:last-child {
-  border-bottom: none;
-}
-
-.accordion__item:hover {
-  background: #f7f7f2;
-}
+.accordion__item:last-child { border-bottom: none; }
+.accordion__item:hover { background: var(--bg-hover); }
 
 .accordion__item-band {
-  width: 4px;
-  height: 24px;
-  border-radius: 2px;
-  flex-shrink: 0;
+  width: 4px; height: 24px;
+  border-radius: 2px; flex-shrink: 0;
 }
 
 .accordion__item-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+  flex: 1; display: flex;
+  flex-direction: column; min-width: 0;
 }
 
 .accordion__item-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #222;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 12px; font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.accordion__item-rent {
-  font-size: 10px;
-  color: #888;
-}
+.accordion__item-rent { font-size: 10px; color: var(--text-muted); }
 
 .accordion__item-price {
-  font-size: 12px;
-  font-weight: 800;
-  color: #1fb25a;
-  flex-shrink: 0;
+  font-size: 12px; font-weight: 800;
+  color: #1fb25a; flex-shrink: 0;
 }
