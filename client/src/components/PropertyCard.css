@@ -1,0 +1,122 @@
+/* ─── Property Card Popup ──────────────────────────────────────── */
+
+.propcard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.propcard {
+  width: 280px;
+  background: #fff;
+  border: 3px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.propcard__header {
+  padding: 16px 14px 12px;
+  text-align: center;
+}
+
+.propcard__title {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.propcard__title--dark {
+  color: #222;
+}
+
+.propcard__group {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+}
+
+.propcard__group--dark {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* ── Body ──────────────────────────────────────────────────────── */
+.propcard__body {
+  padding: 12px 14px;
+}
+
+.propcard__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+  color: #333;
+}
+
+.propcard__row--price {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.propcard__row--highlight {
+  background: #fffbe6;
+  margin: 0 -14px;
+  padding: 4px 14px;
+  font-weight: 700;
+}
+
+.propcard__row--owner {
+  font-weight: 700;
+  color: #c41e3a;
+}
+
+.propcard__val {
+  font-weight: 700;
+  color: #222;
+}
+
+.propcard__val--small {
+  font-size: 10px;
+  max-width: 140px;
+  text-align: right;
+  line-height: 1.3;
+}
+
+.propcard__divider {
+  height: 1px;
+  background: #e0e0d8;
+  margin: 6px 0;
+}
+
+/* ── Close Button ──────────────────────────────────────────────── */
+.propcard__close {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: #f5f5f0;
+  border: none;
+  border-top: 2px solid #e0e0d8;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.propcard__close:hover {
+  background: #eaeae0;
+}
