@@ -668,7 +668,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
           })}
           <div className="board-center">
             <div className="board-center__inner">
-              <span className="board-center__title">MANIPALY</span>
+              <img className="board-center__logo" src="/assets/Gemini_Generated_Image_cwgdnicwgdnicwgd-removebg-preview.png" alt="MANIPALY" />
               <div className="board-center__dice">🎲</div>
             </div>
           </div>
