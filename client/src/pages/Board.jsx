@@ -8,6 +8,7 @@ import AuctionDialog from '../components/AuctionDialog';
 import StatsPanel from '../components/StatsPanel';
 import VictoryScreen from '../components/VictoryScreen';
 import GoAnimation from '../components/GoAnimation';
+import CardDraw from '../components/CardDraw';
 import BOARD_SPACES from '../data/boardSpaces';
 import PROPERTY_DETAILS from '../data/propertyDetails';
 import socket from '../socket';
@@ -66,6 +67,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
   const [auction, setAuction] = useState(null);
   const [winner, setWinner] = useState(initialState.winner || null);
   const [goTrigger, setGoTrigger] = useState(0);
+  const [drawnCard, setDrawnCard] = useState(null);
 
   const logRef = useRef(null);
   const isMyTurn = currentPlayerId === socketId;
@@ -162,6 +164,33 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
         addToast(`${result.playerName} goes to jail!`, 'info');
       } else if (action.type === 'mortgaged_property') {
         addLog(`🏚️ ${result.playerName} landed on a mortgaged property`);
+      } else if (action.type === 'card') {
+        // Show card draw animation
+        setDrawnCard({ text: action.card.text, deckType: action.deckType });
+        const deckLabel = action.deckType === 'chance' ? 'Chance' : 'Community Chest';
+        addLog(`🃏 ${result.playerName} drew ${deckLabel}: "${action.card.text}"`);
+        addToast(`${deckLabel}: ${action.card.text}`, 'info');
+
+        if (action.moneyDelta) {
+          showMoneyDelta(result.playerId, action.moneyDelta);
+        }
+        if (action.newPosition !== undefined && action.newPosition !== result.newPosition) {
+          // Card moved the player — animate to new position
+          animateMovement(result.playerId, result.newPosition, action.newPosition, () => {});
+          result.newPosition = action.newPosition;
+          if (action.passedGo) {
+            addLog(`💰 ${result.playerName} passed GO — collected $200`);
+            showMoneyDelta(result.playerId, +200);
+            setGoTrigger((v) => v + 1);
+          }
+        }
+        if (action.buyOption && result.playerId === socketId) {
+          const bName = BOARD_SPACES.find((s) => s.id === action.buyOption.spaceId)?.name || 'property';
+          setBuyOption({ spaceId: action.buyOption.spaceId, price: action.buyOption.price, name: bName });
+        }
+        if (action.jailFreeCard) {
+          addLog(`🔑 ${result.playerName} got a Get Out of Jail Free card!`);
+        }
       }
 
       if (action.bankrupt) {
@@ -668,7 +697,23 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
           })}
           <div className="board-center">
             <div className="board-center__inner">
+              <div className="board-center__decks">
+                <div className="board-center__deck">
+                  <div className="board-center__deck-stack board-center__deck-stack--chest">
+                    <span className="board-center__deck-icon">📦</span>
+                  </div>
+                  <span className="board-center__deck-label">Community Chest</span>
+                </div>
+              </div>
               <img className="board-center__logo" src="/assets/Gemini_Generated_Image_cwgdnicwgdnicwgd-removebg-preview.png" alt="MANIPALY" />
+              <div className="board-center__decks">
+                <div className="board-center__deck">
+                  <div className="board-center__deck-stack board-center__deck-stack--chance">
+                    <span className="board-center__deck-icon">❓</span>
+                  </div>
+                  <span className="board-center__deck-label">Chance</span>
+                </div>
+              </div>
               <div className="board-center__dice">🎲</div>
             </div>
           </div>
@@ -702,6 +747,11 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
           onMortgage={handleMortgage}
           onUnmortgage={handleUnmortgage}
         />
+      )}
+
+      {/* ── Card Draw Animation ──────────────────────────────────── */}
+      {drawnCard && (
+        <CardDraw card={drawnCard} onDone={() => setDrawnCard(null)} />
       )}
     </div>
   );

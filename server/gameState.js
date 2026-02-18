@@ -60,6 +60,68 @@ const PROPERTY_DATA = {
 // Tax spaces
 const TAX_AMOUNTS = { 4: 200, 38: 200 };
 
+// Chance / Community Chest spaces
+const CHANCE_SPACES = [7, 22, 36];
+const CHEST_SPACES  = [2, 17, 33];
+
+// ── Card Decks ───────────────────────────────────────────────────
+const CHANCE_CARDS = [
+  { id: 'ch1',  text: 'Advance to GO. Collect $200.',                     action: 'move', destination: 0 },
+  { id: 'ch2',  text: 'Advance to Trafalgar Square.',                     action: 'move', destination: 24 },
+  { id: 'ch3',  text: 'Advance to Pall Mall.',                            action: 'move', destination: 11 },
+  { id: 'ch4',  text: 'Advance to Mayfair.',                              action: 'move', destination: 39 },
+  { id: 'ch5',  text: "Advance to King's Cross Station.",                  action: 'move', destination: 5 },
+  { id: 'ch6',  text: 'Go to Jail. Go directly to Jail.',                 action: 'go_to_jail' },
+  { id: 'ch7',  text: 'Go back 3 spaces.',                                action: 'move_back', spaces: 3 },
+  { id: 'ch8',  text: 'Bank pays you dividend of $50.',                   action: 'collect', amount: 50 },
+  { id: 'ch9',  text: 'Your building loan matures. Collect $150.',        action: 'collect', amount: 150 },
+  { id: 'ch10', text: 'You have won a crossword competition. Collect $100.', action: 'collect', amount: 100 },
+  { id: 'ch11', text: 'Speeding fine. Pay $15.',                          action: 'pay', amount: 15 },
+  { id: 'ch12', text: 'Pay school fees of $150.',                         action: 'pay', amount: 150 },
+  { id: 'ch13', text: 'Drunk in charge. Fine $20.',                       action: 'pay', amount: 20 },
+  { id: 'ch14', text: 'Make general repairs: $25 per house, $100 per hotel.', action: 'repairs', perHouse: 25, perHotel: 100 },
+  { id: 'ch15', text: 'You are assessed for street repairs: $40 per house, $115 per hotel.', action: 'repairs', perHouse: 40, perHotel: 115 },
+  { id: 'ch16', text: 'Get out of Jail free.',                            action: 'get_out_of_jail' },
+];
+
+const CHEST_CARDS = [
+  { id: 'cc1',  text: 'Advance to GO. Collect $200.',                     action: 'move', destination: 0 },
+  { id: 'cc2',  text: 'Bank error in your favour. Collect $200.',         action: 'collect', amount: 200 },
+  { id: 'cc3',  text: "Doctor's fee. Pay $50.",                           action: 'pay', amount: 50 },
+  { id: 'cc4',  text: 'From sale of stock you get $50.',                  action: 'collect', amount: 50 },
+  { id: 'cc5',  text: 'Get out of Jail free.',                            action: 'get_out_of_jail' },
+  { id: 'cc6',  text: 'Go to Jail. Go directly to Jail.',                 action: 'go_to_jail' },
+  { id: 'cc7',  text: 'Grand Opera Night. Collect $50 from every player.', action: 'collect_from_all', amount: 50 },
+  { id: 'cc8',  text: 'Holiday Fund matures. Collect $100.',              action: 'collect', amount: 100 },
+  { id: 'cc9',  text: 'Income tax refund. Collect $20.',                  action: 'collect', amount: 20 },
+  { id: 'cc10', text: "It's your birthday. Collect $10 from every player.", action: 'collect_from_all', amount: 10 },
+  { id: 'cc11', text: 'Life insurance matures. Collect $100.',            action: 'collect', amount: 100 },
+  { id: 'cc12', text: 'Hospital fees. Pay $100.',                         action: 'pay', amount: 100 },
+  { id: 'cc13', text: 'School fees. Pay $50.',                            action: 'pay', amount: 50 },
+  { id: 'cc14', text: 'Receive $25 consultancy fee.',                     action: 'collect', amount: 25 },
+  { id: 'cc15', text: 'You have won second prize in a beauty contest. Collect $10.', action: 'collect', amount: 10 },
+  { id: 'cc16', text: 'You inherit $100.',                                action: 'collect', amount: 100 },
+];
+
+function shuffleCards(cards) {
+  const arr = [...cards];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function drawCard(room, deckType) {
+  const deck = deckType === 'chance' ? room.chanceDeck : room.chestDeck;
+  if (deck.length === 0) {
+    // Re-shuffle
+    const source = deckType === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
+    deck.push(...shuffleCards(source));
+  }
+  return deck.shift();
+}
+
 // Group membership lookup
 const GROUP_SPACES = {};
 for (const [id, data] of Object.entries(PROPERTY_DATA)) {
@@ -156,6 +218,9 @@ export function startGame(code) {
   room.auction = null;
   room.winner = null;
   room.log = [];
+  room.chanceDeck = shuffleCards(CHANCE_CARDS);
+  room.chestDeck  = shuffleCards(CHEST_CARDS);
+  room.jailFreeCards = {};  // { playerId: ['chance'|'chest', ...] }
   room.players.forEach((p) => {
     p.position = 0;
     p.money = STARTING_MONEY;
@@ -305,7 +370,124 @@ export function rollDice(code, socketId) {
     return result;
   }
 
-  // ── Property Landing ────────────────────────────────────────
+  // ── Chance / Community Chest ─────────────────────────────────
+  const isChance = CHANCE_SPACES.includes(newPosition);
+  const isChest  = CHEST_SPACES.includes(newPosition);
+  if (isChance || isChest) {
+    const deckType = isChance ? 'chance' : 'chest';
+    const card = drawCard(room, deckType);
+    result.landingAction = { type: 'card', deckType, card: { id: card.id, text: card.text } };
+    room.log.push(`${currentPlayer.name} drew: "${card.text}"`);
+
+    switch (card.action) {
+      case 'move': {
+        const dest = card.destination;
+        if (dest < currentPlayer.position && dest !== 10) {
+          currentPlayer.money += GO_SALARY; // passed GO
+          result.landingAction.passedGo = true;
+        }
+        currentPlayer.position = dest;
+        result.landingAction.newPosition = dest;
+        result.money = currentPlayer.money;
+
+        // Re-evaluate the destination space for rent/buy
+        const destProp = PROPERTY_DATA[dest];
+        if (destProp) {
+          const owned = room.properties[dest];
+          if (!owned) {
+            result.landingAction.buyOption = { spaceId: dest, price: destProp.price };
+          } else if (owned.ownerId !== currentPlayer.id && !owned.mortgaged) {
+            const rent = calculateRent(room, dest, total);
+            const owner = room.players.find((p) => p.id === owned.ownerId);
+            if (owner && !owner.bankrupt && rent > 0) {
+              currentPlayer.money -= rent;
+              owner.money += rent;
+              result.money = currentPlayer.money;
+              result.landingAction.rent = rent;
+              result.landingAction.ownerName = owner.name;
+              room.log.push(`${currentPlayer.name} paid $${rent} rent to ${owner.name}`);
+              if (currentPlayer.money < 0) {
+                goBankrupt(room, currentPlayer);
+                result.landingAction.bankrupt = true;
+                const winner = checkWinCondition(room);
+                if (winner) result.winner = { id: winner.id, name: winner.name };
+              }
+            }
+          }
+        }
+        break;
+      }
+      case 'move_back': {
+        const dest = (currentPlayer.position - card.spaces + 40) % 40;
+        currentPlayer.position = dest;
+        result.landingAction.newPosition = dest;
+        break;
+      }
+      case 'go_to_jail':
+        currentPlayer.position = 10;
+        currentPlayer.inJail = true;
+        currentPlayer.jailTurns = 0;
+        result.landingAction.newPosition = 10;
+        room.log.push(`${currentPlayer.name} was sent to jail!`);
+        break;
+      case 'collect':
+        currentPlayer.money += card.amount;
+        result.money = currentPlayer.money;
+        result.landingAction.moneyDelta = card.amount;
+        break;
+      case 'pay':
+        currentPlayer.money -= card.amount;
+        result.money = currentPlayer.money;
+        result.landingAction.moneyDelta = -card.amount;
+        if (currentPlayer.money < 0) {
+          goBankrupt(room, currentPlayer);
+          result.landingAction.bankrupt = true;
+          const winner = checkWinCondition(room);
+          if (winner) result.winner = { id: winner.id, name: winner.name };
+        }
+        break;
+      case 'collect_from_all': {
+        const others = getActivePlayers(room).filter((p) => p.id !== currentPlayer.id);
+        let totalCollected = 0;
+        others.forEach((p) => {
+          const amt = Math.min(card.amount, p.money);
+          p.money -= amt;
+          totalCollected += amt;
+        });
+        currentPlayer.money += totalCollected;
+        result.money = currentPlayer.money;
+        result.landingAction.moneyDelta = totalCollected;
+        break;
+      }
+      case 'repairs': {
+        let cost = 0;
+        for (const [, prop] of Object.entries(room.properties)) {
+          if (prop.ownerId === currentPlayer.id) {
+            const h = prop.houses || 0;
+            if (h === 5) cost += card.perHotel;
+            else cost += h * card.perHouse;
+          }
+        }
+        currentPlayer.money -= cost;
+        result.money = currentPlayer.money;
+        result.landingAction.moneyDelta = -cost;
+        room.log.push(`${currentPlayer.name} paid $${cost} for repairs`);
+        if (currentPlayer.money < 0) {
+          goBankrupt(room, currentPlayer);
+          result.landingAction.bankrupt = true;
+          const winner = checkWinCondition(room);
+          if (winner) result.winner = { id: winner.id, name: winner.name };
+        }
+        break;
+      }
+      case 'get_out_of_jail':
+        if (!room.jailFreeCards[currentPlayer.id]) room.jailFreeCards[currentPlayer.id] = [];
+        room.jailFreeCards[currentPlayer.id].push(deckType);
+        result.landingAction.jailFreeCard = true;
+        break;
+    }
+    return result;
+  }
   const propData = PROPERTY_DATA[newPosition];
   if (propData) {
     const owned = room.properties[newPosition];
