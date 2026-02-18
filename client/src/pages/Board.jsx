@@ -705,7 +705,9 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
                   <span className="board-center__deck-label">Community Chest</span>
                 </div>
               </div>
-              <img className="board-center__logo" src="/assets/Gemini_Generated_Image_cwgdnicwgdnicwgd-removebg-preview.png" alt="MANIPALY" />
+              <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1" target="_blank" rel="noopener noreferrer">
+                <img className="board-center__logo" src="/assets/Gemini_Generated_Image_cwgdnicwgdnicwgd-removebg-preview.png" alt="MANIPALY" />
+              </a>
               <div className="board-center__decks">
                 <div className="board-center__deck">
                   <div className="board-center__deck-stack board-center__deck-stack--chance">

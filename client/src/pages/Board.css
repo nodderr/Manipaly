@@ -425,7 +425,9 @@
 
 .board-center__inner {
   display: flex; flex-direction: column;
-  align-items: center; gap: 12px;
+  align-items: center; justify-content: center;
+  gap: 12px;
+  width: 100%; height: 100%;
 }
 
 .board-center__logo {
@@ -434,6 +436,8 @@
   max-height: 15vh;
   object-fit: contain;
   filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.15));
+  display: block;
+  margin: 0 auto;
 }
 
 .board-center__dice { font-size: 40px; }
