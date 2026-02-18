@@ -47,3 +47,43 @@ To play with friends, you need to host the game online. **Render** is a great fr
 Share the **Frontend URL** with your friends. They can join your lobby and play!
 
 > **Note**: The free tier on Render "spins down" after inactivity. The first time you load the game after a break, it might take 30-60 seconds for the server to wake up.
+
+---
+
+# Alternative: Vercel (Frontend) + Render (Backend)
+
+**Vercel** is excellent for hosting the frontend (faster CDN), but **does not support the backend** because Manipaly uses persistent WebSockets and in-memory game state, which Vercel Serverless functions cannot handle.
+
+## 1. Deploy Backend on Render
+Follow **Step 2** above to deploy the `server` folder on Render. Copy the Backend URL.
+
+## 2. Deploy Frontend on Vercel
+1. Go to [vercel.com](https://vercel.com) and log in.
+2. Click **Add New** -> **Project**.
+3. Import your `Manipaly` repository.
+4. Configure the project:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `client` (Click "Edit" next to Root Directory and select `client`)
+5. **Environment Variables**:
+   - Key: `VITE_SERVER_URL`
+   - Value: Your Render Backend URL (e.g., `https://manipaly-server.onrender.com`).
+6. Click **Deploy**.
+
+## 3. Update Backend CORS
+1. Go back to your **Render Dashboard** -> Server Service -> **Environment**.
+2. Update `CLIENT_URL` to your new **Vercel domain** (e.g., `https://manipaly.vercel.app`).
+3. Save to redeploy the backend.
+
+---
+
+# Alternative: GitHub Pages (Frontend)
+It is possible to host the frontend on GitHub Pages, but it **requires extra configuration** because GitHub Pages doesn't natively support "Single Page Apps" like this one (refreshing `/game` will give a 404 error).
+
+**Recommendation**: Stick to **Render** or **Vercel** for the frontend to avoid these headaches.
+
+If you really want to use GitHub Pages:
+1. You must set `base: '/Manipaly/'` in `vite.config.js`.
+2. You need a special script (like `404.html` hack) to handle routing.
+3. You need to use `gh-pages` package to deploy.
+
+
