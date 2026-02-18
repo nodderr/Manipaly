@@ -11,6 +11,9 @@ export default function Lobby({ onGameStart }) {
   const [hostId, setHostId] = useState(null);
   const [error, setError] = useState('');
   const [inRoom, setInRoom] = useState(false);
+  const [pgnInput, setPgnInput] = useState('');
+  const [pgnSlots, setPgnSlots] = useState(null); // array of { name, joined } or null
+  const [isPgnRoom, setIsPgnRoom] = useState(false);
 
   useEffect(() => {
     // ── Socket listeners ──────────────────────────────────────
@@ -52,6 +55,27 @@ export default function Lobby({ onGameStart }) {
       setError(message);
     });
 
+    // ── PGN Events ──────────────────────────────────────────────
+    socket.on('PGN_ROOM_CREATED', ({ code, players, hostId, pgnSlots }) => {
+      setRoomCode(code);
+      setPlayers(players);
+      setHostId(hostId);
+      setPgnSlots(pgnSlots);
+      setIsPgnRoom(true);
+      setInRoom(true);
+      setError('');
+      saveSession(code, name.trim());
+    });
+
+    socket.on('PGN_PLAYER_JOINED', ({ players, hostId, pgnSlots }) => {
+      setPlayers(players);
+      setHostId(hostId);
+      setPgnSlots(pgnSlots);
+      setIsPgnRoom(true);
+      setInRoom(true);
+      setError('');
+    });
+
     return () => {
       socket.off('ROOM_CREATED');
       socket.off('PLAYER_JOINED');
@@ -60,8 +84,10 @@ export default function Lobby({ onGameStart }) {
       socket.off('PLAYER_RECONNECTED');
       socket.off('GAME_START');
       socket.off('ERROR');
+      socket.off('PGN_ROOM_CREATED');
+      socket.off('PGN_PLAYER_JOINED');
     };
-  }, [onGameStart, roomCode, joinCode]);
+  }, [onGameStart, roomCode, joinCode, name]);
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -86,6 +112,18 @@ export default function Lobby({ onGameStart }) {
 
   const handleStart = () => {
     socket.emit('START_GAME', { code: roomCode });
+  };
+
+  const handleLoadPGN = () => {
+    if (!name.trim()) {
+      setError('Enter your display name first.');
+      return;
+    }
+    if (!pgnInput.trim()) {
+      setError('Paste a PGN code to load.');
+      return;
+    }
+    socket.emit('LOAD_PGN', { pgn: pgnInput.trim(), name: name.trim(), playerId: getPlayerId() });
   };
 
   const isHost = getPlayerId() === hostId;
@@ -147,6 +185,60 @@ export default function Lobby({ onGameStart }) {
                   Join
                 </button>
               </div>
+
+              <div className="lobby__divider">
+                <span>or load saved game</span>
+              </div>
+
+              <div className="lobby__pgn-section">
+                <textarea
+                  className="lobby__input lobby__input--pgn"
+                  placeholder="Paste PGN code here..."
+                  value={pgnInput}
+                  onChange={(e) => setPgnInput(e.target.value)}
+                  rows={3}
+                />
+                <button className="lobby__btn lobby__btn--load" onClick={handleLoadPGN}>
+                  💾 Load Game
+                </button>
+              </div>
+            </div>
+          </>
+        ) : isPgnRoom && pgnSlots ? (
+          <>
+            {/* PGN Room Info */}
+            <div className="lobby__room-info">
+              <span className="lobby__room-label">Room Code</span>
+              <span className="lobby__room-code">{roomCode}</span>
+              <span className="lobby__room-hint">Share this code. Players must join with their original name.</span>
+            </div>
+
+            {/* PGN Slot List */}
+            <div className="lobby__players">
+              <h3 className="lobby__players-title">
+                Waiting for Players ({pgnSlots.filter(s => s.joined).length}/{pgnSlots.length})
+              </h3>
+              <ul className="lobby__player-list">
+                {pgnSlots.map((slot, i) => (
+                  <li key={i} className={`lobby__player-item ${slot.joined ? '' : 'lobby__player-item--pending'}`}>
+                    <span className={`lobby__pgn-status ${slot.joined ? 'lobby__pgn-status--joined' : ''}`}>
+                      {slot.joined ? '✓' : '○'}
+                    </span>
+                    <span className="lobby__player-name">{slot.name}</span>
+                    {slot.joined && (
+                      <span className="lobby__player-badge lobby__player-badge--joined">JOINED</span>
+                    )}
+                    {!slot.joined && (
+                      <span className="lobby__player-badge lobby__player-badge--waiting">WAITING</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="lobby__waiting">
+              <div className="lobby__waiting-spinner" />
+              Game will auto-start when all players join...
             </div>
           </>
         ) : (

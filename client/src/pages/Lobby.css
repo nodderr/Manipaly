@@ -324,3 +324,57 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── PGN Load Section ─────────────────────────────────────────── */
+.lobby__pgn-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lobby__input--pgn {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  resize: none;
+  word-break: break-all;
+}
+
+.lobby__btn--load {
+  background: #6366f1;
+  color: #fff;
+  border-color: #4f46e5;
+}
+.lobby__btn--load:hover {
+  background: #4f46e5;
+}
+
+/* ── PGN Waiting Room ─────────────────────────────────────────── */
+.lobby__player-item--pending {
+  opacity: 0.55;
+}
+
+.lobby__pgn-status {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: #aaa;
+  flex-shrink: 0;
+}
+.lobby__pgn-status--joined {
+  color: #1fb25a;
+  font-weight: 700;
+}
+
+.lobby__player-badge--joined {
+  color: #1fb25a;
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.lobby__player-badge--waiting {
+  color: #888;
+  background: #f5f5f5;
+  border-color: #ddd;
+}

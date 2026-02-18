@@ -68,6 +68,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
   const [winner, setWinner] = useState(initialState.winner || null);
   const [goTrigger, setGoTrigger] = useState(0);
   const [drawnCard, setDrawnCard] = useState(null);
+  const [pgnExport, setPgnExport] = useState(null); // { pgn: string } or null
+  const [pgnCopied, setPgnCopied] = useState(false);
 
   const logRef = useRef(null);
   const isMyTurn = currentPlayerId === playerId;
@@ -391,6 +393,12 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
       setTimeout(() => setError(''), 3000);
     });
 
+    // ── PGN Export ────────────────────────────────────────────────
+    socket.on('PGN_EXPORTED', ({ pgn }) => {
+      setPgnExport({ pgn });
+      setPgnCopied(false);
+    });
+
     return () => {
       const events = [
         'GAME_STATE_UPDATE', 'DICE_ROLLED', 'PROPERTY_BOUGHT', 'PASS_ACKNOWLEDGED',
@@ -399,6 +407,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
         'TRADE_PROPOSED', 'TRADE_RESOLVED',
         'AUCTION_STARTED', 'AUCTION_BID', 'AUCTION_ENDED',
         'PLAYER_BANKRUPT', 'GAME_OVER', 'PLAYER_LEFT', 'ERROR',
+        'PGN_EXPORTED',
       ];
       events.forEach((e) => socket.off(e));
     };
@@ -437,6 +446,17 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
   }
   function handleBid(amount) {
     socket.emit('PLACE_BID', { code: roomCode, amount });
+  }
+  function handleExportPGN() {
+    socket.emit('EXPORT_PGN', { code: roomCode });
+  }
+  function handleCopyPGN() {
+    if (pgnExport?.pgn) {
+      navigator.clipboard.writeText(pgnExport.pgn).then(() => {
+        setPgnCopied(true);
+        setTimeout(() => setPgnCopied(false), 2000);
+      });
+    }
   }
 
   // ── Derived values ──────────────────────────────────────────────
@@ -506,6 +526,13 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
       <div className="game__panel">
         <div className="game__title-row">
           <h2 className="game__title">MANIPALY</h2>
+          <button
+            className="dark-toggle"
+            onClick={handleExportPGN}
+            title="Export game state (PGN)"
+          >
+            💾
+          </button>
           <button
             className="dark-toggle"
             onClick={() => setDarkMode((v) => !v)}
@@ -754,6 +781,29 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
       {/* ── Card Draw Animation ──────────────────────────────────── */}
       {drawnCard && (
         <CardDraw card={drawnCard} onDone={() => setDrawnCard(null)} />
+      )}
+
+      {/* ── PGN Export Modal ──────────────────────────────────────── */}
+      {pgnExport && (
+        <div className="pgn-modal-overlay" onClick={() => setPgnExport(null)}>
+          <div className="pgn-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pgn-modal__header">
+              <h3>Export Game State</h3>
+              <button className="pgn-modal__close" onClick={() => setPgnExport(null)}>✕</button>
+            </div>
+            <p className="pgn-modal__hint">Copy this code and share it to resume the game later.</p>
+            <textarea
+              className="pgn-modal__text"
+              readOnly
+              value={pgnExport.pgn}
+              rows={5}
+              onClick={(e) => e.target.select()}
+            />
+            <button className="btn btn--buy pgn-modal__copy" onClick={handleCopyPGN}>
+              {pgnCopied ? '✓ Copied!' : '📋 Copy to Clipboard'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -2,6 +2,7 @@
 import {
   createRoom, joinRoom, disconnectPlayer, reconnectPlayer,
   getRoom, startGame, getGameState, getPlayerIdFromSocket,
+  exportGamePGN, decodePGN, createRoomFromPGN, joinPGNRoom,
 } from './gameState.js';
 
 export function registerLobbyHandlers(io, socket) {
@@ -37,7 +38,36 @@ export function registerLobbyHandlers(io, socket) {
       socket.emit('ERROR', { message: 'Player ID is required.' });
       return;
     }
-    const result = joinRoom(code.toUpperCase(), playerId, socket.id, name.trim());
+
+    const upperCode = code.toUpperCase();
+    const result = joinRoom(upperCode, playerId, socket.id, name.trim());
+
+    // If this is a PGN room, route through PGN join logic
+    if (!result.success && result.error === 'pgn_room') {
+      const pgnResult = joinPGNRoom(upperCode, playerId, socket.id, name.trim());
+      if (!pgnResult.success) {
+        socket.emit('ERROR', { message: pgnResult.error });
+        return;
+      }
+      socket.join(pgnResult.room.code);
+      console.log(`[PGN] ${name} joined PGN room ${pgnResult.room.code}`);
+
+      // Notify all players about updated slots
+      io.to(pgnResult.room.code).emit('PGN_PLAYER_JOINED', {
+        players: pgnResult.room.players,
+        hostId: pgnResult.room.hostId,
+        pgnSlots: pgnResult.pgnSlots,
+      });
+
+      // If all players joined, auto-start the restored game
+      if (pgnResult.allJoined) {
+        console.log(`[PGN] All players joined room ${pgnResult.room.code} — game restored!`);
+        const state = getGameState(upperCode);
+        io.to(pgnResult.room.code).emit('GAME_START', state);
+      }
+      return;
+    }
+
     if (!result.success) {
       socket.emit('ERROR', { message: result.error });
       return;
@@ -86,6 +116,41 @@ export function registerLobbyHandlers(io, socket) {
     socket.to(result.code).emit('PLAYER_RECONNECTED', { playerId });
   });
 
+  // ── Export PGN ──────────────────────────────────────────────────
+  socket.on('EXPORT_PGN', ({ code }) => {
+    if (!code) { socket.emit('ERROR', { message: 'Room code is required.' }); return; }
+    const result = exportGamePGN(code);
+    if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
+    console.log(`[PGN] Game exported for room ${code}`);
+    socket.emit('PGN_EXPORTED', { pgn: result.pgn });
+  });
+
+  // ── Load PGN ───────────────────────────────────────────────────
+  socket.on('LOAD_PGN', ({ pgn, name, playerId }) => {
+    if (!pgn || !name || !playerId) {
+      socket.emit('ERROR', { message: 'PGN string, name, and player ID are required.' });
+      return;
+    }
+    const decoded = decodePGN(pgn);
+    if (decoded.error) {
+      socket.emit('ERROR', { message: decoded.error });
+      return;
+    }
+    const result = createRoomFromPGN(decoded.data, playerId, socket.id, name.trim());
+    if (!result.success) {
+      socket.emit('ERROR', { message: result.error });
+      return;
+    }
+    socket.join(result.room.code);
+    console.log(`[PGN] ${name} created PGN room ${result.room.code} (${decoded.data.players.length} players expected)`);
+    socket.emit('PGN_ROOM_CREATED', {
+      code: result.room.code,
+      players: result.room.players,
+      hostId: result.room.hostId,
+      pgnSlots: result.pgnSlots,
+    });
+  });
+
   socket.on('disconnect', () => {
     const result = disconnectPlayer(socket.id);
     if (!result) return;
@@ -94,10 +159,24 @@ export function registerLobbyHandlers(io, socket) {
       // Lobby disconnect — removed immediately
       console.log(`[ROOM] Player left room ${result.code} (lobby)`);
       if (result.room) {
-        io.to(result.code).emit('PLAYER_LEFT', {
-          players: result.room.players,
-          hostId: result.room.hostId,
-        });
+        // If PGN room, update slots to un-join the player
+        if (result.room.pgnSlots) {
+          const slot = result.room.pgnSlots.find((s) => s.playerId === result.playerId);
+          if (slot) {
+            slot.joined = false;
+            slot.playerId = null;
+          }
+          io.to(result.code).emit('PGN_PLAYER_JOINED', {
+            players: result.room.players,
+            hostId: result.room.hostId,
+            pgnSlots: result.room.pgnSlots,
+          });
+        } else {
+          io.to(result.code).emit('PLAYER_LEFT', {
+            players: result.room.players,
+            hostId: result.room.hostId,
+          });
+        }
       }
     } else {
       // In-game disconnect — grace period started

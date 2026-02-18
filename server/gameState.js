@@ -19,6 +19,9 @@ const JAIL_FINE = 50;
 const MAX_JAIL_TURNS = 3;
 const AUCTION_DURATION_MS = 10000;
 
+// ── PGN encoder/decoder ──────────────────────────────────────────
+import { encodePGN, decodePGN } from './pgn.js';
+
 // ── Property data — derived from the single source of truth ─────
 // Edit ONLY: client/src/data/propertyDetails.js
 import PROPERTY_DETAILS from '../client/src/data/propertyDetails.js';
@@ -150,6 +153,7 @@ export function createRoom(playerId, socketId, hostName) {
 export function joinRoom(code, playerId, socketId, playerName) {
   const room = rooms.get(code);
   if (!room) return { success: false, error: 'Room not found.' };
+  if (room.status === 'waiting_pgn') return { success: false, error: 'pgn_room' }; // signal to route through joinPGNRoom
   if (room.status === 'playing') return { success: false, error: 'Game already started.' };
   if (room.players.length >= room.maxPlayers) return { success: false, error: 'Room is full.' };
 
@@ -192,16 +196,16 @@ export function disconnectPlayer(socketId) {
 
   socketToPlayer.delete(socketId);
 
-  // In lobby (waiting) — remove immediately
-  if (room.status === 'waiting') {
+  // In lobby (waiting / waiting_pgn) — remove immediately
+  if (room.status === 'waiting' || room.status === 'waiting_pgn') {
     const idx = room.players.indexOf(player);
     room.players.splice(idx, 1);
     if (room.players.length === 0) {
       rooms.delete(roomCode);
-      return { room: null, code: roomCode, permanent: true };
+      return { room: null, code: roomCode, permanent: true, playerId };
     }
     if (room.hostId === playerId) room.hostId = room.players[0].id;
-    return { room, code: roomCode, permanent: true };
+    return { room, code: roomCode, permanent: true, playerId };
   }
 
   // In-game — mark disconnected, start grace timer
@@ -1098,4 +1102,200 @@ export function getGameState(code) {
     winner: room.winner,
     status: room.status,
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PGN EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════════
+
+export function exportGamePGN(code) {
+  const room = rooms.get(code);
+  if (!room) return { error: 'Room not found.' };
+  if (room.status !== 'playing') return { error: 'Game is not in progress.' };
+  const pgn = encodePGN(room);
+  return { success: true, pgn };
+}
+
+export { decodePGN };
+
+export function createRoomFromPGN(pgnData, hostPlayerId, hostSocketId, hostName) {
+  // Validate that hostName matches one of the PGN player names
+  const hostSlotIndex = pgnData.players.findIndex(
+    (p) => p.name.toLowerCase() === hostName.toLowerCase()
+  );
+  if (hostSlotIndex === -1) {
+    return { success: false, error: 'Your name doesn\'t match any player in this saved game.' };
+  }
+
+  let code = generateCode();
+  while (rooms.has(code)) code = generateCode();
+
+  // Build PGN slot tracking
+  const pgnSlots = pgnData.players.map((p) => ({
+    name: p.name,
+    joined: false,
+    playerId: null,
+  }));
+
+  // Auto-fill the host slot
+  pgnSlots[hostSlotIndex].joined = true;
+  pgnSlots[hostSlotIndex].playerId = hostPlayerId;
+
+  const room = {
+    code,
+    hostId: hostPlayerId,
+    players: [{
+      id: hostPlayerId,
+      socketId: hostSocketId,
+      name: hostName,
+      color: pgnData.players[hostSlotIndex].color || PLAYER_COLORS[0],
+      position: 0,
+      money: STARTING_MONEY,
+      inJail: false,
+      jailTurns: 0,
+      bankrupt: false,
+      disconnected: false,
+    }],
+    status: 'waiting_pgn',
+    maxPlayers: pgnData.players.length,
+    currentPlayerIndex: 0,
+    properties: {},
+    pendingTrade: null,
+    auction: null,
+    winner: null,
+    log: [],
+    // PGN restore data
+    pgnRestore: pgnData,
+    pgnSlots,
+  };
+
+  socketToPlayer.set(hostSocketId, { playerId: hostPlayerId, roomCode: code });
+  rooms.set(code, room);
+
+  return { success: true, room, pgnSlots };
+}
+
+export function joinPGNRoom(code, playerId, socketId, playerName) {
+  const room = rooms.get(code);
+  if (!room) return { success: false, error: 'Room not found.' };
+  if (room.status !== 'waiting_pgn') return { success: false, error: 'Room is not waiting for PGN players.' };
+
+  // Find a matching unfilled slot (case-insensitive)
+  const slotIndex = room.pgnSlots.findIndex(
+    (s) => !s.joined && s.name.toLowerCase() === playerName.toLowerCase()
+  );
+  if (slotIndex === -1) {
+    return { success: false, error: 'Your name doesn\'t match any remaining player in this saved game.' };
+  }
+
+  // Fill the slot
+  room.pgnSlots[slotIndex].joined = true;
+  room.pgnSlots[slotIndex].playerId = playerId;
+
+  // Add the player to the room
+  room.players.push({
+    id: playerId,
+    socketId,
+    name: playerName,
+    color: room.pgnRestore.players[slotIndex].color || PLAYER_COLORS[room.players.length % PLAYER_COLORS.length],
+    position: 0,
+    money: STARTING_MONEY,
+    inJail: false,
+    jailTurns: 0,
+    bankrupt: false,
+    disconnected: false,
+  });
+
+  socketToPlayer.set(socketId, { playerId, roomCode: code });
+
+  // Check if all slots are filled
+  const allJoined = room.pgnSlots.every((s) => s.joined);
+
+  if (allJoined) {
+    // Apply PGN state — restore everything
+    applyPGNState(room);
+  }
+
+  return { success: true, room, pgnSlots: room.pgnSlots, allJoined };
+}
+
+function applyPGNState(room) {
+  const pgn = room.pgnRestore;
+
+  // Build name → new playerId map from slots
+  const nameToId = {};
+  for (const slot of room.pgnSlots) {
+    nameToId[slot.name.toLowerCase()] = slot.playerId;
+  }
+
+  // Restore each player's state from PGN
+  for (const pgnPlayer of pgn.players) {
+    const newId = nameToId[pgnPlayer.name.toLowerCase()];
+    const player = room.players.find((p) => p.id === newId);
+    if (player) {
+      player.position = pgnPlayer.position;
+      player.money = pgnPlayer.money;
+      player.color = pgnPlayer.color;
+      player.inJail = pgnPlayer.inJail || false;
+      player.jailTurns = pgnPlayer.jailTurns || 0;
+      player.bankrupt = pgnPlayer.bankrupt || false;
+    }
+  }
+
+  // Reorder players to match PGN order
+  const orderedPlayers = [];
+  for (const pgnPlayer of pgn.players) {
+    const newId = nameToId[pgnPlayer.name.toLowerCase()];
+    const player = room.players.find((p) => p.id === newId);
+    if (player) orderedPlayers.push(player);
+  }
+  room.players = orderedPlayers;
+
+  // Restore properties — map ownerName → new playerId
+  room.properties = {};
+  for (const [spaceId, prop] of Object.entries(pgn.properties)) {
+    const ownerId = nameToId[prop.ownerName.toLowerCase()];
+    const owner = room.players.find((p) => p.id === ownerId);
+    if (ownerId && owner) {
+      room.properties[spaceId] = {
+        ownerId,
+        ownerName: owner.name,
+        price: PROPERTY_DATA[spaceId]?.price || 0,
+        houses: prop.houses || 0,
+        mortgaged: prop.mortgaged || false,
+      };
+    }
+  }
+
+  // Restore jail-free cards
+  room.jailFreeCards = {};
+  if (pgn.jailFreeCards) {
+    for (const [name, decks] of Object.entries(pgn.jailFreeCards)) {
+      const pid = nameToId[name.toLowerCase()];
+      if (pid && Array.isArray(decks) && decks.length > 0) {
+        room.jailFreeCards[pid] = [...decks];
+      }
+    }
+  }
+
+  // Set turn
+  room.currentPlayerIndex = pgn.turn;
+  if (room.currentPlayerIndex >= room.players.length) {
+    room.currentPlayerIndex = 0;
+  }
+
+  // Fresh card decks
+  room.chanceDeck = shuffleCards(CHANCE_CARDS);
+  room.chestDeck = shuffleCards(CHEST_CARDS);
+
+  // Transition to playing
+  room.status = 'playing';
+  room.pendingTrade = null;
+  room.auction = null;
+  room.winner = null;
+  room.log = ['Game restored from saved state.'];
+
+  // Clean up PGN data
+  delete room.pgnRestore;
+  delete room.pgnSlots;
 }
