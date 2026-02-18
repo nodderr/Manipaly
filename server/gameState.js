@@ -66,22 +66,29 @@ const CHEST_SPACES  = [2, 17, 33];
 
 // ── Card Decks ───────────────────────────────────────────────────
 const CHANCE_CARDS = [
-  { id: 'ch1',  text: 'Advance to GO. Collect $200.',                     action: 'move', destination: 0 },
-  { id: 'ch2',  text: 'Advance to Trafalgar Square.',                     action: 'move', destination: 24 },
-  { id: 'ch3',  text: 'Advance to Pall Mall.',                            action: 'move', destination: 11 },
-  { id: 'ch4',  text: 'Advance to Mayfair.',                              action: 'move', destination: 39 },
-  { id: 'ch5',  text: "Advance to King's Cross Station.",                  action: 'move', destination: 5 },
-  { id: 'ch6',  text: 'Go to Jail. Go directly to Jail.',                 action: 'go_to_jail' },
-  { id: 'ch7',  text: 'Go back 3 spaces.',                                action: 'move_back', spaces: 3 },
-  { id: 'ch8',  text: 'Bank pays you dividend of $50.',                   action: 'collect', amount: 50 },
-  { id: 'ch9',  text: 'Your building loan matures. Collect $150.',        action: 'collect', amount: 150 },
-  { id: 'ch10', text: 'You have won a crossword competition. Collect $100.', action: 'collect', amount: 100 },
-  { id: 'ch11', text: 'Speeding fine. Pay $15.',                          action: 'pay', amount: 15 },
-  { id: 'ch12', text: 'Pay school fees of $150.',                         action: 'pay', amount: 150 },
-  { id: 'ch13', text: 'Drunk in charge. Fine $20.',                       action: 'pay', amount: 20 },
-  { id: 'ch14', text: 'Make general repairs: $25 per house, $100 per hotel.', action: 'repairs', perHouse: 25, perHotel: 100 },
+  { id: 'ch1',  text: 'Ghar se paise aaye, collect 200Rs and go to Go',                     action: 'move', destination: 0 },
+  { id: 'ch2',  text: 'Bhook lagi go to Aditya Mess.',                     action: 'move', destination: 24 },
+  { id: 'ch3',  text: 'Exam Khatam Move to Bachhus',                            action: 'move', destination: 11 },
+  { id: 'ch4',  text: 'House Party go to D406 ',                              action: 'move', destination: 39 },
+  { id: 'ch5',  text: "Matter Ho gaya Go to Suresh",                  action: 'move', destination: 5 },
+  { id: 'ch6',  text: 'Mcdonalds Sign Chori Kiya , Go to Jail',                 action: 'go_to_jail' },
+  { id: 'ch7',  text: 'Back aa gayi Go back 3 spaces.',                                action: 'move_back', spaces: 3 },
+  { id: 'ch8',  text: 'Splitwise Clear hua Collect 50.',                   action: 'collect', amount: 50 },
+  { id: 'ch9',  text: 'Juniour ko fake ganja bhej diya collect 150.',        action: 'collect', amount: 150 },
+  { id: 'ch10', text: 'MES ke paise aa gaye 300.', action: 'collect', amount: 300 },
+  { id: 'ch11', text: 'Juice world gaye Pay 100.',                          action: 'pay', amount: 100 },
+  { id: 'ch12', text: 'ID card gum gaya  Pay 200.',                         action: 'pay', amount: 200 },
+  { id: 'ch13', text: 'Sutta Marr liya : Fine 20.',                       action: 'pay', amount: 20 },
+  { id: 'ch14', text: 'Deposit Kat Gaya: 25 per house, 100 per hotel.', action: 'repairs', perHouse: 25, perHotel: 100 },
   { id: 'ch15', text: 'You are assessed for street repairs: $40 per house, $115 per hotel.', action: 'repairs', perHouse: 40, perHotel: 115 },
-  { id: 'ch16', text: 'Get out of Jail free.',                            action: 'get_out_of_jail' },
+  { id: 'ch16', text: 'Sneak maar liya : Get out of Jail free.',                            action: 'get_out_of_jail' },
+  { id: 'ch18',  text: 'Sneak nahi maar paaye : Go to Jail',                 action: 'go_to_jail' },
+  { id: 'ch17', text: 'Innova Thook gayi Pay 500',                          action: 'pay', amount: 500 },
+
+  
+  
+  
+  
 ];
 
 const CHEST_CARDS = [
