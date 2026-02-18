@@ -53,3 +53,12 @@
 
 .stats__money { color: #1fb25a; font-weight: 700; }
 .stats__networth { font-weight: 800; color: var(--text-primary); }
+
+@media (max-width: 768px) {
+  .stats-panel { margin-top: 4px; }
+  .stats__toggle { padding: 6px 10px; font-size: 12px; }
+  .stats__table { font-size: 11px; }
+  .stats__table th { padding: 4px 6px; font-size: 9px; }
+  .stats__table td { padding: 4px 6px; }
+  .stats__dot { width: 8px; height: 8px; margin-right: 4px; }
+}

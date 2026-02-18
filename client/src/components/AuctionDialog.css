@@ -87,3 +87,22 @@
 }
 
 .auction__quick-btn:hover { background: var(--bg-hover); }
+
+@media (max-width: 768px) {
+  .auction-dialog {
+    width: 92vw;
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .auction__title { font-size: 16px; margin-bottom: 4px; }
+  .auction__property { font-size: 15px; }
+  .auction__price { font-size: 12px; margin-bottom: 10px; }
+  .auction__timer-track { height: 6px; }
+  .auction__time-label { font-size: 11px; margin-bottom: 8px; }
+  .auction__current { font-size: 14px; margin-bottom: 10px; }
+  .auction__bid-row { gap: 6px; margin-bottom: 8px; }
+  .auction__bid-input { padding: 7px 8px; font-size: 14px; }
+  .auction__bid-btn { padding: 7px 12px; font-size: 13px; }
+  .auction__quick-bids { gap: 4px; }
+  .auction__quick-btn { padding: 4px 10px; font-size: 11px; }
+}

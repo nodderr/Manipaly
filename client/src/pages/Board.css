@@ -662,3 +662,290 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ── Mobile tab bar (hidden on desktop) ───────────────────────── */
+.mobile-tabs { display: none; }
+
+/* ── Tab content (always visible on desktop) ──────────────────── */
+.panel__tab-content { display: block; }
+.panel__expandable { display: contents; }
+.panel__controls { display: contents; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE (<= 768px)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── Game container: stack vertically ────────────────────────── */
+  .game {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport height for mobile browsers */
+    overflow: hidden;
+  }
+
+  /* ── Board: full-width, square, at top ──────────────────────── */
+  .game__board {
+    order: -1;
+    flex: none;
+    width: 100vw;
+    height: 100vw;
+    max-height: 55dvh;
+    padding: 0;
+    --panel-w: 0px;
+    --pad: 0px;
+    --board-size: min(100vw, 55dvh);
+  }
+
+  .board-grid {
+    width: min(100vw, 55dvh);
+    height: min(100vw, 55dvh);
+    border-width: 2px;
+    margin: 0 auto;
+  }
+
+  .board-center__logo {
+    max-width: 60%;
+    max-height: 8vh;
+  }
+
+  .board-center__dice { font-size: 20px; }
+
+  .board-center__deck-stack {
+    width: 36px;
+    height: 24px;
+  }
+
+  .board-center__deck-icon { font-size: 13px; }
+  .board-center__deck-label { font-size: 6px; }
+
+  .board-center__decks { gap: 10px; }
+  .board-center__inner { gap: 4px; }
+
+  /* ── Left panel → bottom panel ──────────────────────────────── */
+  .game__panel {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    flex: 1;
+    min-height: 0;
+    border-right: none;
+    border-top: 2px solid var(--border-strong);
+    padding: 8px 10px;
+    gap: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Title row: compact on mobile ───────────────────────────── */
+  .game__title-row {
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-light);
+    gap: 6px;
+  }
+
+  .game__title {
+    font-size: 14px;
+    letter-spacing: 0.05em;
+  }
+
+  .dark-toggle {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  /* ── Controls wrapper: always visible ───────────────────────── */
+  .panel__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .panel__turn {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-width: 1px;
+  }
+
+  .panel__dot { width: 10px; height: 10px; }
+
+  /* Dice: smaller on mobile */
+  .panel__dice { padding: 4px 0; gap: 8px; }
+
+  .dice {
+    width: 38px; height: 38px;
+    border-width: 1px;
+    border-radius: 6px;
+  }
+
+  .dice__face { font-size: 24px; }
+
+  /* Actions: compact */
+  .panel__actions { gap: 4px; }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    border-width: 1px;
+  }
+
+  .btn--roll {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .panel__buy {
+    padding: 8px;
+    border-width: 1px;
+  }
+
+  .panel__buy-title { font-size: 12px; margin-bottom: 2px; }
+  .panel__buy-price { font-size: 16px; margin-bottom: 6px; }
+
+  .panel__jail-label { font-size: 13px; margin-bottom: 4px; }
+  .panel__jail-btns { gap: 6px; }
+  .btn--jail-pay, .btn--jail-roll { padding: 7px 8px; font-size: 12px; border-width: 1px; }
+
+  .panel__end-row { gap: 6px; }
+
+  .btn--trade { padding: 8px 10px; font-size: 12px; border-width: 1px; }
+
+  .panel__error {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  /* Landed card: compact */
+  .landed-card {
+    padding: 6px 8px;
+    border-width: 1px;
+    gap: 6px;
+  }
+
+  .landed-card__band { width: 4px; height: 28px; }
+  .landed-card__name { font-size: 11px; }
+  .landed-card__group { font-size: 8px; }
+  .landed-card__price { font-size: 12px; }
+  .landed-card__rent { font-size: 8px; }
+  .landed-card__by { font-size: 8px; }
+
+  /* ── Mobile tab bar ─────────────────────────────────────────── */
+  .mobile-tabs {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 4px;
+  }
+
+  .mobile-tabs__btn {
+    flex: 1;
+    padding: 6px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .mobile-tabs__btn--active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  /* ── Expandable panel content ────────────────────────────────── */
+  .panel__expandable {
+    display: none;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .panel__expandable--open {
+    display: block;
+  }
+
+  .panel__tab-content {
+    display: none;
+  }
+
+  .panel__tab-content--active {
+    display: block;
+  }
+
+  .panel__heading {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  /* ── Log on mobile ──────────────────────────────────────────── */
+  .panel__log-section {
+    flex: none;
+    min-height: 0;
+  }
+
+  .panel__log {
+    max-height: none;
+    min-height: 60px;
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .panel__log-entry { padding: 3px 0; }
+
+  /* ── Players on mobile ──────────────────────────────────────── */
+  .panel__player {
+    padding: 5px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .panel__player-money { font-size: 12px; }
+  .panel__player-props { font-size: 10px; }
+
+  /* ── Right panel: full-width overlay on mobile ──────────────── */
+  .game__right-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    min-width: 0;
+    height: 100dvh;
+    z-index: 800;
+    animation: slide-up-mobile 0.25s ease-out;
+  }
+
+  @keyframes slide-up-mobile {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .rpanel__header {
+    padding: 10px 14px;
+  }
+
+  .rpanel__body { padding: 10px; }
+
+  /* ── PGN Modal on mobile ────────────────────────────────────── */
+  .pgn-modal {
+    width: 95vw;
+    padding: 16px 18px;
+    border-radius: 10px;
+  }
+
+  .pgn-modal__header h3 { font-size: 16px; }
+  .pgn-modal__hint { font-size: 12px; }
+  .pgn-modal__text { font-size: 11px; padding: 8px 10px; }
+  .pgn-modal__copy { padding: 10px; font-size: 13px; }
+}

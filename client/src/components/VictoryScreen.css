@@ -79,3 +79,20 @@
 }
 
 .victory__btn:hover { background: #a51830; }
+
+@media (max-width: 768px) {
+  .victory-dialog {
+    width: 92vw;
+    padding: 20px 16px;
+    border-radius: 12px;
+  }
+  .victory__confetti { font-size: 36px; }
+  .victory__title { font-size: 22px; }
+  .victory__winner { font-size: 20px; }
+  .victory__subtitle { font-size: 14px; margin-bottom: 14px; }
+  .victory__rank { font-size: 12px; width: 24px; }
+  .victory__name { font-size: 12px; }
+  .victory__cash { font-size: 12px; }
+  .victory__player { padding: 6px 10px; gap: 6px; }
+  .victory__btn { padding: 10px; font-size: 14px; }
+}

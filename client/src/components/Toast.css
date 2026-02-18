@@ -78,3 +78,19 @@
 [data-theme="dark"] .toast--info {
   background: #555;
 }
+
+@media (max-width: 768px) {
+  .toast-container {
+    top: 6px;
+    right: 6px;
+    left: 6px;
+  }
+  .toast {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  .toast__icon { font-size: 14px; }
+}

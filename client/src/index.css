@@ -59,3 +59,16 @@ html, body {
 #root {
   min-height: 100vh;
 }
+
+/* ── Mobile Touch Improvements ────────────────────────────────── */
+@media (max-width: 768px) {
+  html, body {
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}

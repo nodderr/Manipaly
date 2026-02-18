@@ -185,3 +185,20 @@
   from { opacity: 1; transform: scale(1); }
   to   { opacity: 0; transform: scale(0.9); }
 }
+
+@media (max-width: 768px) {
+  .card-draw {
+    width: 240px;
+    height: 160px;
+  }
+  .card-draw__back-icon { font-size: 28px; }
+  .card-draw__back-label { font-size: 11px; letter-spacing: 0.15em; }
+  .card-draw__header-icon { font-size: 18px; }
+  .card-draw__header-title { font-size: 13px; }
+  .card-draw__text { font-size: 13px; max-width: 200px; }
+  .card-draw__face { padding: 14px; border-radius: 10px; }
+
+  .board-center__deck-stack { width: 36px; height: 24px; }
+  .board-center__deck-icon { font-size: 13px; }
+  .board-center__deck-label { font-size: 6px; }
+}

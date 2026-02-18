@@ -160,3 +160,27 @@
   color: #c41e3a;
   line-height: 1;
 }
+
+/* ── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sq__corner-name { font-size: 6px; }
+  .sq__corner-icon { font-size: 12px; }
+  .sq__corner-sub  { font-size: 5px; }
+  .sq--corner { padding: 1px; }
+
+  .sq__color--bottom,
+  .sq__color--top    { height: 10px; }
+  .sq__color--left,
+  .sq__color--right  { width: 10px; }
+
+  .sq__body { padding: 1px; gap: 0; }
+  .sq__name { font-size: 5px; line-height: 1.1; }
+  .sq__icon { font-size: 8px; margin: 0; }
+  .sq__price { font-size: 5px; }
+  .sq__owned { font-size: 6px; }
+  .sq__houses { font-size: 5px; letter-spacing: -1px; }
+  .sq__houses--hotel { font-size: 7px; }
+  .sq__mortgaged-label { font-size: 6px; }
+
+  .sq__tokens { gap: 1px; padding: 1px; }
+}

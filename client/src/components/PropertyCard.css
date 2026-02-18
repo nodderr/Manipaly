@@ -136,3 +136,17 @@
 .propcard__close:hover {
   background: var(--bg-hover, #eaeae0);
 }
+
+@media (max-width: 768px) {
+  .propcard {
+    width: 260px;
+    max-width: 88vw;
+  }
+  .propcard__header { padding: 12px 10px 10px; }
+  .propcard__title { font-size: 14px; }
+  .propcard__group { font-size: 9px; }
+  .propcard__body { padding: 10px; }
+  .propcard__row { font-size: 11px; padding: 3px 0; }
+  .propcard__row--price { font-size: 13px; }
+  .propcard__close { padding: 8px; font-size: 12px; }
+}

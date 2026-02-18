@@ -70,6 +70,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
   const [drawnCard, setDrawnCard] = useState(null);
   const [pgnExport, setPgnExport] = useState(null); // { pgn: string } or null
   const [pgnCopied, setPgnCopied] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState(false); // collapsed bottom sheet
+  const [mobileTab, setMobileTab] = useState('props');   // 'props' | 'players' | 'log'
 
   const logRef = useRef(null);
   const isMyTurn = currentPlayerId === playerId;
@@ -522,7 +524,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
         />
       )}
 
-      {/* ── Left Panel ──────────────────────────────────────────── */}
+      {/* ── Left Panel (desktop) / Bottom Bar (mobile) ────────── */}
       <div className="game__panel">
         <div className="game__title-row">
           <h2 className="game__title">MANIPALY</h2>
@@ -542,156 +544,177 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
           </button>
         </div>
 
-        {/* Turn */}
-        <div className="panel__section">
-          <div className={`panel__turn ${!isMyTurn ? 'panel__turn--waiting' : ''}`}>
-            {currentPlayer && (
-              <>
-                <span className="panel__dot" style={{ backgroundColor: currentPlayer.color }} />
-                <span>
-                  <PlayerName name={currentPlayer.name} />
-                  {currentPlayer.id === playerId ? " — Your turn" : "'s turn"}
-                  {currentPlayer.inJail && ' 🔒'}
-                </span>
-              </>
+        {/* ── Always-visible controls (turn + actions + dice) ─── */}
+        <div className="panel__controls">
+          {/* Turn */}
+          <div className="panel__section">
+            <div className={`panel__turn ${!isMyTurn ? 'panel__turn--waiting' : ''}`}>
+              {currentPlayer && (
+                <>
+                  <span className="panel__dot" style={{ backgroundColor: currentPlayer.color }} />
+                  <span>
+                    <PlayerName name={currentPlayer.name} />
+                    {currentPlayer.id === playerId ? " — Your turn" : "'s turn"}
+                    {currentPlayer.inJail && ' 🔒'}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Dice */}
+          {dice && (
+            <div className={`panel__section panel__dice ${diceRolling ? 'panel__dice--rolling' : 'panel__dice--settled'}`}>
+              <div className={`dice ${diceRolling ? 'dice--shake' : ''}`}>
+                <span className="dice__face">{DICE_FACES[dice.die1]}</span>
+              </div>
+              <div className={`dice ${diceRolling ? 'dice--shake' : ''}`}>
+                <span className="dice__face">{DICE_FACES[dice.die2]}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Landed-on Card */}
+          {landedSpace && (
+            <div className="panel__section panel__landed anim-fade-in">
+              <div
+                className="landed-card"
+                onClick={() => landedDetail && handleSquareClick(landedSpace.spaceId)}
+                title={landedDetail ? 'Click for full details' : ''}
+                style={{ cursor: landedDetail ? 'pointer' : 'default' }}
+              >
+                {landedColor && <div className="landed-card__band" style={{ backgroundColor: landedColor }} />}
+                {!landedColor && <div className="landed-card__band landed-card__band--neutral" />}
+                <div className="landed-card__info">
+                  <span className="landed-card__name">{landedDetail?.name || landedSpace.spaceName}</span>
+                  <span className="landed-card__group">{landedDetail?.groupLabel || ''}</span>
+                </div>
+                {landedDetail && (
+                  <div className="landed-card__stats">
+                    <span className="landed-card__price">${landedDetail.price}</span>
+                    <span className="landed-card__rent">Rent ${landedDetail.rent}</span>
+                  </div>
+                )}
+                <span className="landed-card__by">{landedSpace.playerName}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="panel__section panel__actions">
+            {/* Jail actions */}
+            {isMyTurn && myInJail && !isAnimating && !hasRolled && (
+              <div className="panel__jail-actions anim-fade-in">
+                <div className="panel__jail-label">🔒 You're in Jail!</div>
+                <div className="panel__jail-btns">
+                  <button className="btn btn--jail-pay" onClick={handlePayJailFine}>Pay $50 Bail</button>
+                  <button className="btn btn--jail-roll" onClick={handleRollForJail}>🎲 Roll Doubles</button>
+                </div>
+              </div>
+            )}
+
+            {/* Normal roll */}
+            {isMyTurn && !hasRolled && !buyOption && !isAnimating && !myInJail && (
+              <button className="btn btn--roll btn--pulse" onClick={handleRoll}>🎲 Roll Dice</button>
+            )}
+
+            {/* Buy prompt */}
+            {buyOption && (
+              <div className="panel__buy anim-fade-in">
+                <p className="panel__buy-title">Buy {buyOption.name}?</p>
+                <p className="panel__buy-price">${buyOption.price}</p>
+                <div className="panel__buy-btns">
+                  <button className="btn btn--buy" onClick={handleBuy}>Buy</button>
+                  <button className="btn btn--pass" onClick={handlePass}>Pass (Auction)</button>
+                </div>
+              </div>
+            )}
+
+            {/* End turn + Trade button */}
+            {isMyTurn && hasRolled && !buyOption && !isAnimating && (
+              <div className="panel__end-row anim-fade-in">
+                <button className="btn btn--end" onClick={handleEndTurn}>End Turn ➡️</button>
+                <button className="btn btn--trade" onClick={() => setShowTradeDialog(true)}>💱 Trade</button>
+              </div>
             )}
           </div>
+
+          {error && <div className="panel__error anim-fade-in">{error}</div>}
         </div>
 
-        {/* Dice */}
-        {dice && (
-          <div className={`panel__section panel__dice ${diceRolling ? 'panel__dice--rolling' : 'panel__dice--settled'}`}>
-            <div className={`dice ${diceRolling ? 'dice--shake' : ''}`}>
-              <span className="dice__face">{DICE_FACES[dice.die1]}</span>
-            </div>
-            <div className={`dice ${diceRolling ? 'dice--shake' : ''}`}>
-              <span className="dice__face">{DICE_FACES[dice.die2]}</span>
-            </div>
-          </div>
-        )}
+        {/* ── Mobile tab bar (visible only on mobile) ─────────── */}
+        <div className="mobile-tabs">
+          <button className={`mobile-tabs__btn ${mobilePanel && mobileTab === 'props' ? 'mobile-tabs__btn--active' : ''}`}
+            onClick={() => { setMobilePanel(mobileTab === 'props' && mobilePanel ? false : true); setMobileTab('props'); }}>
+            🏠 Props
+          </button>
+          <button className={`mobile-tabs__btn ${mobilePanel && mobileTab === 'players' ? 'mobile-tabs__btn--active' : ''}`}
+            onClick={() => { setMobilePanel(mobileTab === 'players' && mobilePanel ? false : true); setMobileTab('players'); }}>
+            👥 Players
+          </button>
+          <button className={`mobile-tabs__btn ${mobilePanel && mobileTab === 'log' ? 'mobile-tabs__btn--active' : ''}`}
+            onClick={() => { setMobilePanel(mobileTab === 'log' && mobilePanel ? false : true); setMobileTab('log'); }}>
+            📋 Log
+          </button>
+        </div>
 
-        {/* Landed-on Card */}
-        {landedSpace && (
-          <div className="panel__section panel__landed anim-fade-in">
-            <div
-              className="landed-card"
-              onClick={() => landedDetail && handleSquareClick(landedSpace.spaceId)}
-              title={landedDetail ? 'Click for full details' : ''}
-              style={{ cursor: landedDetail ? 'pointer' : 'default' }}
-            >
-              {landedColor && <div className="landed-card__band" style={{ backgroundColor: landedColor }} />}
-              {!landedColor && <div className="landed-card__band landed-card__band--neutral" />}
-              <div className="landed-card__info">
-                <span className="landed-card__name">{landedDetail?.name || landedSpace.spaceName}</span>
-                <span className="landed-card__group">{landedDetail?.groupLabel || ''}</span>
-              </div>
-              {landedDetail && (
-                <div className="landed-card__stats">
-                  <span className="landed-card__price">${landedDetail.price}</span>
-                  <span className="landed-card__rent">Rent ${landedDetail.rent}</span>
+        {/* ── Expanded content (always visible on desktop, tab-toggled on mobile) ── */}
+        <div className={`panel__expandable ${mobilePanel ? 'panel__expandable--open' : ''}`}>
+          {/* Your Properties — with build/mortgage actions */}
+          <div className={`panel__tab-content ${mobileTab === 'props' ? 'panel__tab-content--active' : ''}`} data-tab="props">
+            <h3 className="panel__heading">Your Properties</h3>
+            <PropertiesCarousel
+              properties={properties}
+              playerId={playerId}
+              onPropertyClick={handleSquareClick}
+              onBuild={handleBuildHouse}
+              onMortgage={handleMortgage}
+              onUnmortgage={handleUnmortgage}
+            />
+            {/* Stats Panel */}
+            <StatsPanel players={players} properties={properties} myId={playerId} />
+          </div>
+
+          {/* Players */}
+          <div className={`panel__tab-content ${mobileTab === 'players' ? 'panel__tab-content--active' : ''}`} data-tab="players">
+            <h3 className="panel__heading">Players</h3>
+            <div className="panel__players">
+              {players.map((p) => (
+                <div
+                  key={p.id}
+                  className={`panel__player ${p.id === currentPlayerId ? 'panel__player--active' : ''} ${p.id === rightPanelPlayer ? 'panel__player--inspecting' : ''} ${p.bankrupt ? 'panel__player--bankrupt' : ''}`}
+                  onClick={() => !p.bankrupt && setRightPanelPlayer(p.id === rightPanelPlayer ? null : p.id)}
+                  title={p.bankrupt ? 'Bankrupt' : 'Click to view properties'}
+                >
+                  <span className="panel__dot" style={{ backgroundColor: p.color }} />
+                  <span className="panel__player-name">
+                    <PlayerName name={p.name} suffix={p.id === playerId ? ' (You)' : ''} />
+                    {p.inJail && ' 🔒'}
+                    {p.bankrupt && ' 💀'}
+                  </span>
+                  <span className="panel__player-props">{countProps(p.id)} 🏠</span>
+                  <span className="panel__player-money">
+                    ${p.money}
+                    {moneyDeltas[p.id] !== undefined && (
+                      <span className={`money-delta ${moneyDeltas[p.id] >= 0 ? 'money-delta--up' : 'money-delta--down'}`}>
+                        {moneyDeltas[p.id] >= 0 ? '+' : ''}{moneyDeltas[p.id]}
+                      </span>
+                    )}
+                  </span>
                 </div>
-              )}
-              <span className="landed-card__by">{landedSpace.playerName}</span>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* Actions */}
-        <div className="panel__section panel__actions">
-          {/* Jail actions */}
-          {isMyTurn && myInJail && !isAnimating && !hasRolled && (
-            <div className="panel__jail-actions anim-fade-in">
-              <div className="panel__jail-label">🔒 You're in Jail!</div>
-              <div className="panel__jail-btns">
-                <button className="btn btn--jail-pay" onClick={handlePayJailFine}>Pay $50 Bail</button>
-                <button className="btn btn--jail-roll" onClick={handleRollForJail}>🎲 Roll Doubles</button>
-              </div>
+          {/* Log */}
+          <div className={`panel__tab-content ${mobileTab === 'log' ? 'panel__tab-content--active' : ''}`} data-tab="log">
+            <h3 className="panel__heading">Game Log</h3>
+            <div className="panel__log" ref={logRef}>
+              {log.length === 0 && <span className="panel__log-empty">Game started!</span>}
+              {log.map((msg, i) => (
+                <div key={i} className="panel__log-entry">{msg}</div>
+              ))}
             </div>
-          )}
-
-          {/* Normal roll */}
-          {isMyTurn && !hasRolled && !buyOption && !isAnimating && !myInJail && (
-            <button className="btn btn--roll btn--pulse" onClick={handleRoll}>🎲 Roll Dice</button>
-          )}
-
-          {/* Buy prompt */}
-          {buyOption && (
-            <div className="panel__buy anim-fade-in">
-              <p className="panel__buy-title">Buy {buyOption.name}?</p>
-              <p className="panel__buy-price">${buyOption.price}</p>
-              <div className="panel__buy-btns">
-                <button className="btn btn--buy" onClick={handleBuy}>Buy</button>
-                <button className="btn btn--pass" onClick={handlePass}>Pass (Auction)</button>
-              </div>
-            </div>
-          )}
-
-          {/* End turn + Trade button */}
-          {isMyTurn && hasRolled && !buyOption && !isAnimating && (
-            <div className="panel__end-row anim-fade-in">
-              <button className="btn btn--end" onClick={handleEndTurn}>End Turn ➡️</button>
-              <button className="btn btn--trade" onClick={() => setShowTradeDialog(true)}>💱 Trade</button>
-            </div>
-          )}
-        </div>
-
-        {error && <div className="panel__error anim-fade-in">{error}</div>}
-
-        {/* Your Properties — with build/mortgage actions */}
-        <div className="panel__section">
-          <h3 className="panel__heading">Your Properties</h3>
-          <PropertiesCarousel
-            properties={properties}
-            playerId={playerId}
-            onPropertyClick={handleSquareClick}
-            onBuild={handleBuildHouse}
-            onMortgage={handleMortgage}
-            onUnmortgage={handleUnmortgage}
-          />
-        </div>
-
-        {/* Stats Panel */}
-        <StatsPanel players={players} properties={properties} myId={playerId} />
-
-        {/* Players */}
-        <div className="panel__section">
-          <h3 className="panel__heading">Players</h3>
-          <div className="panel__players">
-            {players.map((p) => (
-              <div
-                key={p.id}
-                className={`panel__player ${p.id === currentPlayerId ? 'panel__player--active' : ''} ${p.id === rightPanelPlayer ? 'panel__player--inspecting' : ''} ${p.bankrupt ? 'panel__player--bankrupt' : ''}`}
-                onClick={() => !p.bankrupt && setRightPanelPlayer(p.id === rightPanelPlayer ? null : p.id)}
-                title={p.bankrupt ? 'Bankrupt' : 'Click to view properties'}
-              >
-                <span className="panel__dot" style={{ backgroundColor: p.color }} />
-                <span className="panel__player-name">
-                  <PlayerName name={p.name} suffix={p.id === playerId ? ' (You)' : ''} />
-                  {p.inJail && ' 🔒'}
-                  {p.bankrupt && ' 💀'}
-                </span>
-                <span className="panel__player-props">{countProps(p.id)} 🏠</span>
-                <span className="panel__player-money">
-                  ${p.money}
-                  {moneyDeltas[p.id] !== undefined && (
-                    <span className={`money-delta ${moneyDeltas[p.id] >= 0 ? 'money-delta--up' : 'money-delta--down'}`}>
-                      {moneyDeltas[p.id] >= 0 ? '+' : ''}{moneyDeltas[p.id]}
-                    </span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Log */}
-        <div className="panel__section panel__log-section">
-          <h3 className="panel__heading">Game Log</h3>
-          <div className="panel__log" ref={logRef}>
-            {log.length === 0 && <span className="panel__log-empty">Game started!</span>}
-            {log.map((msg, i) => (
-              <div key={i} className="panel__log-entry">{msg}</div>
-            ))}
           </div>
         </div>
       </div>

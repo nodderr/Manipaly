@@ -378,3 +378,11 @@
   background: #f5f5f5;
   border-color: #ddd;
 }
+
+@media (max-width: 768px) {
+  .lobby { padding: 16px; }
+  .lobby__card { padding: 20px 16px; }
+  .lobby__title { font-size: 1.5rem; }
+  .lobby__room-code { font-size: 2rem; }
+  .lobby__input--pgn { font-size: 0.75rem; }
+}

@@ -112,3 +112,16 @@
   font-size: 12px; font-weight: 800;
   color: #1fb25a; flex-shrink: 0;
 }
+
+@media (max-width: 768px) {
+  .accordion { max-height: none; gap: 1px; }
+  .accordion__header { padding: 5px 8px; font-size: 11px; }
+  .accordion__swatch { width: 12px; height: 12px; }
+  .accordion__count { font-size: 9px; padding: 1px 4px; }
+  .accordion__chevron { font-size: 8px; }
+  .accordion__item { padding: 5px 8px; gap: 6px; }
+  .accordion__item-band { width: 3px; height: 20px; }
+  .accordion__item-name { font-size: 11px; }
+  .accordion__item-rent { font-size: 9px; }
+  .accordion__item-price { font-size: 11px; }
+}
