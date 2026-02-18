@@ -3,6 +3,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import https from 'https';
 import { registerLobbyHandlers } from './lobby.js';
 import { registerGameHandlers } from './game.js';
 
@@ -34,4 +35,17 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`\n  🎲 Manipaly server running on http://localhost:${PORT}\n`);
+  
+  // ─── Keep-Alive Logic for Render ───
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+  if (RENDER_URL) {
+    console.log(`[KEEP-ALIVE] Monitoring enabled for: ${RENDER_URL}`);
+    setInterval(() => {
+      https.get(`${RENDER_URL}/api/health`, (res) => {
+        console.log(`[KEEP-ALIVE] Ping successful: ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.error(`[KEEP-ALIVE] Ping failed: ${err.message}`);
+      });
+    }, 14 * 60 * 1000); // Ping every 14 minutes
+  }
 });
