@@ -271,6 +271,54 @@ export function reconnectPlayer(playerId, newSocketId) {
 
 export function getRoom(code) { return rooms.get(code) || null; }
 
+export function leaveRoom(code, socketId) {
+  const room = rooms.get(code);
+  if (!room) return null;
+
+  const mapping = socketToPlayer.get(socketId);
+  const playerId = mapping?.playerId;
+  if (!playerId) return null;
+
+  const player = room.players.find(p => p.id === playerId);
+  if (!player) return null;
+
+  // Remove player
+  const idx = room.players.indexOf(player);
+  room.players.splice(idx, 1);
+  socketToPlayer.delete(socketId);
+
+  // Cancel any disconnect timer
+  const timer = disconnectTimers.get(playerId);
+  if (timer) {
+    clearTimeout(timer);
+    disconnectTimers.delete(playerId);
+  }
+
+  if (room.players.length === 0) {
+    rooms.delete(code);
+    return { room: null, code, playerId, playerName: player.name };
+  }
+
+  if (room.hostId === playerId) room.hostId = room.players[0].id;
+
+  // Handle PGN slot
+  if (room.pgnSlots) {
+    const slot = room.pgnSlots.find((s) => s.playerId === playerId);
+    if (slot) {
+      slot.joined = false;
+      slot.playerId = null;
+    }
+  }
+
+  // If in-game, check win condition
+  if (room.status === 'playing') {
+    if (room.currentPlayerIndex >= room.players.length) room.currentPlayerIndex = 0;
+    checkWinCondition(room);
+  }
+
+  return { room, code, playerId, playerName: player.name };
+}
+
 export function startGame(code) {
   const room = rooms.get(code);
   if (!room) return null;

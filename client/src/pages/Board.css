@@ -48,6 +48,17 @@
   background: var(--bg-hover);
 }
 
+.dark-toggle--leave {
+  border-color: #c41e3a;
+  color: #c41e3a;
+}
+.dark-toggle--leave:hover {
+  background: #fef2f2;
+}
+[data-theme="dark"] .dark-toggle--leave:hover {
+  background: #3a1a1a;
+}
+
 /* ── Left Panel ────────────────────────────────────────────────── */
 .game__panel {
   width: 280px;

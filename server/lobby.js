@@ -3,6 +3,7 @@ import {
   createRoom, joinRoom, disconnectPlayer, reconnectPlayer,
   getRoom, startGame, getGameState, getPlayerIdFromSocket,
   exportGamePGN, decodePGN, createRoomFromPGN, joinPGNRoom,
+  leaveRoom,
 } from './gameState.js';
 
 export function registerLobbyHandlers(io, socket) {
@@ -149,6 +150,36 @@ export function registerLobbyHandlers(io, socket) {
       hostId: result.room.hostId,
       pgnSlots: result.pgnSlots,
     });
+  });
+
+  // ── Leave Room (explicit) ────────────────────────────────────
+  socket.on('LEAVE_ROOM', ({ code }) => {
+    if (!code) return;
+    const upperCode = code.toUpperCase();
+
+    const result = leaveRoom(upperCode, socket.id);
+    if (!result) return;
+
+    socket.leave(upperCode);
+    console.log(`[ROOM] ${result.playerName} left room ${upperCode}`);
+
+    if (!result.room) {
+      // Room was deleted (no players left)
+      return;
+    }
+
+    if (result.room.pgnSlots) {
+      io.to(upperCode).emit('PGN_PLAYER_JOINED', {
+        players: result.room.players,
+        hostId: result.room.hostId,
+        pgnSlots: result.room.pgnSlots,
+      });
+    } else {
+      io.to(upperCode).emit('PLAYER_LEFT', {
+        players: result.room.players,
+        hostId: result.room.hostId,
+      });
+    }
   });
 
   socket.on('disconnect', () => {

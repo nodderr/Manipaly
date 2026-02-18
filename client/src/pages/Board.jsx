@@ -460,6 +460,11 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
       });
     }
   }
+  function handleLeaveGame() {
+    if (!window.confirm('Are you sure you want to leave the game?')) return;
+    socket.emit('LEAVE_ROOM', { code: roomCode });
+    if (onReturnToLobby) onReturnToLobby();
+  }
 
   // ── Derived values ──────────────────────────────────────────────
   function countProps(playerId) {
@@ -541,6 +546,13 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
             title={darkMode ? 'Light mode' : 'Dark mode'}
           >
             {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button
+            className="dark-toggle dark-toggle--leave"
+            onClick={handleLeaveGame}
+            title="Leave game"
+          >
+            🚪
           </button>
         </div>
 

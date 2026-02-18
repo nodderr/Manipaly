@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import socket from '../socket';
-import { getPlayerId, saveSession } from '../socket';
+import { getPlayerId, saveSession, clearSession } from '../socket';
 import './Lobby.css';
 
 export default function Lobby({ onGameStart }) {
@@ -12,82 +12,98 @@ export default function Lobby({ onGameStart }) {
   const [error, setError] = useState('');
   const [inRoom, setInRoom] = useState(false);
   const [pgnInput, setPgnInput] = useState('');
-  const [pgnSlots, setPgnSlots] = useState(null); // array of { name, joined } or null
+  const [pgnSlots, setPgnSlots] = useState(null);
   const [isPgnRoom, setIsPgnRoom] = useState(false);
 
+  // ── Refs to avoid stale closures in socket handlers ─────────
+  const nameRef = useRef(name);
+  const roomCodeRef = useRef(roomCode);
+  const joinCodeRef = useRef(joinCode);
+  nameRef.current = name;
+  roomCodeRef.current = roomCode;
+  joinCodeRef.current = joinCode;
+
+  // ── Stable socket listeners (registered ONCE) ──────────────
   useEffect(() => {
-    // ── Socket listeners ──────────────────────────────────────
-    socket.on('ROOM_CREATED', ({ code, players, hostId }) => {
+    function handleRoomCreated({ code, players, hostId }) {
       setRoomCode(code);
+      roomCodeRef.current = code;
       setPlayers(players);
       setHostId(hostId);
       setInRoom(true);
       setError('');
-      saveSession(code, name.trim());
-    });
+      saveSession(code, nameRef.current.trim());
+    }
 
-    socket.on('PLAYER_JOINED', ({ players, hostId }) => {
+    function handlePlayerJoined({ players, hostId }) {
       setPlayers(players);
       setHostId(hostId);
       setInRoom(true);
       setError('');
-    });
+    }
 
-    socket.on('PLAYER_LEFT', ({ players, hostId }) => {
+    function handlePlayerLeft({ players, hostId }) {
       setPlayers(players);
-      setHostId(hostId);
-    });
+      if (hostId !== undefined) setHostId(hostId);
+    }
 
-    socket.on('PLAYER_DISCONNECTED', ({ playerId: pid, players: updatedPlayers }) => {
+    function handlePlayerDisconnected({ playerId: pid, players: updatedPlayers }) {
       setPlayers(updatedPlayers);
-    });
+    }
 
-    socket.on('PLAYER_RECONNECTED', ({ playerId: pid }) => {
-      // Will get full update from GAME_STATE_UPDATE
-    });
+    function handleGameStart(state) {
+      const code = roomCodeRef.current || joinCodeRef.current;
+      saveSession(code, nameRef.current.trim());
+      onGameStart(state, code);
+    }
 
-    socket.on('GAME_START', (state) => {
-      saveSession(roomCode || joinCode, name.trim());
-      onGameStart(state, roomCode || joinCode);
-    });
-
-    socket.on('ERROR', ({ message }) => {
+    function handleError({ message }) {
       setError(message);
-    });
+    }
 
-    // ── PGN Events ──────────────────────────────────────────────
-    socket.on('PGN_ROOM_CREATED', ({ code, players, hostId, pgnSlots }) => {
+    function handlePgnRoomCreated({ code, players, hostId, pgnSlots }) {
       setRoomCode(code);
+      roomCodeRef.current = code;
       setPlayers(players);
       setHostId(hostId);
       setPgnSlots(pgnSlots);
       setIsPgnRoom(true);
       setInRoom(true);
       setError('');
-      saveSession(code, name.trim());
-    });
+      saveSession(code, nameRef.current.trim());
+    }
 
-    socket.on('PGN_PLAYER_JOINED', ({ players, hostId, pgnSlots }) => {
+    function handlePgnPlayerJoined({ players, hostId, pgnSlots }) {
       setPlayers(players);
       setHostId(hostId);
       setPgnSlots(pgnSlots);
       setIsPgnRoom(true);
       setInRoom(true);
       setError('');
-    });
+    }
+
+    socket.on('ROOM_CREATED', handleRoomCreated);
+    socket.on('PLAYER_JOINED', handlePlayerJoined);
+    socket.on('PLAYER_LEFT', handlePlayerLeft);
+    socket.on('PLAYER_DISCONNECTED', handlePlayerDisconnected);
+    socket.on('PLAYER_RECONNECTED', () => {});
+    socket.on('GAME_START', handleGameStart);
+    socket.on('ERROR', handleError);
+    socket.on('PGN_ROOM_CREATED', handlePgnRoomCreated);
+    socket.on('PGN_PLAYER_JOINED', handlePgnPlayerJoined);
 
     return () => {
-      socket.off('ROOM_CREATED');
-      socket.off('PLAYER_JOINED');
-      socket.off('PLAYER_LEFT');
-      socket.off('PLAYER_DISCONNECTED');
+      socket.off('ROOM_CREATED', handleRoomCreated);
+      socket.off('PLAYER_JOINED', handlePlayerJoined);
+      socket.off('PLAYER_LEFT', handlePlayerLeft);
+      socket.off('PLAYER_DISCONNECTED', handlePlayerDisconnected);
       socket.off('PLAYER_RECONNECTED');
-      socket.off('GAME_START');
-      socket.off('ERROR');
-      socket.off('PGN_ROOM_CREATED');
-      socket.off('PGN_PLAYER_JOINED');
+      socket.off('GAME_START', handleGameStart);
+      socket.off('ERROR', handleError);
+      socket.off('PGN_ROOM_CREATED', handlePgnRoomCreated);
+      socket.off('PGN_PLAYER_JOINED', handlePgnPlayerJoined);
     };
-  }, [onGameStart, roomCode, joinCode, name]);
+  }, [onGameStart]);
 
   const handleCreate = () => {
     if (!name.trim()) {
@@ -106,12 +122,27 @@ export default function Lobby({ onGameStart }) {
       setError('Enter a room code.');
       return;
     }
-    setRoomCode(joinCode.toUpperCase());
-    socket.emit('JOIN_ROOM', { code: joinCode.toUpperCase(), name: name.trim(), playerId: getPlayerId() });
+    const code = joinCode.toUpperCase();
+    setRoomCode(code);
+    roomCodeRef.current = code;
+    socket.emit('JOIN_ROOM', { code, name: name.trim(), playerId: getPlayerId() });
   };
 
   const handleStart = () => {
-    socket.emit('START_GAME', { code: roomCode });
+    socket.emit('START_GAME', { code: roomCodeRef.current });
+  };
+
+  const handleLeave = () => {
+    socket.emit('LEAVE_ROOM', { code: roomCodeRef.current });
+    setInRoom(false);
+    setRoomCode('');
+    roomCodeRef.current = '';
+    setPlayers([]);
+    setHostId(null);
+    setPgnSlots(null);
+    setIsPgnRoom(false);
+    setError('');
+    clearSession();
   };
 
   const handleLoadPGN = () => {
@@ -240,6 +271,10 @@ export default function Lobby({ onGameStart }) {
               <div className="lobby__waiting-spinner" />
               Game will auto-start when all players join...
             </div>
+
+            <button className="lobby__btn lobby__btn--leave" onClick={handleLeave}>
+              🚪 Leave Room
+            </button>
           </>
         ) : (
           <>
@@ -291,6 +326,10 @@ export default function Lobby({ onGameStart }) {
                 Waiting for host to start...
               </div>
             )}
+
+            <button className="lobby__btn lobby__btn--leave" onClick={handleLeave}>
+              🚪 Leave Room
+            </button>
           </>
         )}
       </div>
