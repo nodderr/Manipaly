@@ -41,7 +41,7 @@ const GROUP_COLORS = {
 
 const DICE_FACES = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-export default function Board({ initialState, roomCode, socketId, onReturnToLobby }) {
+export default function Board({ initialState, roomCode, playerId, onReturnToLobby }) {
   // ── Core State ──────────────────────────────────────────────────
   const [players, setPlayers] = useState(initialState.players || []);
   const [currentPlayerId, setCurrentPlayerId] = useState(initialState.currentPlayerId || null);
@@ -70,8 +70,8 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
   const [drawnCard, setDrawnCard] = useState(null);
 
   const logRef = useRef(null);
-  const isMyTurn = currentPlayerId === socketId;
-  const me = players.find((p) => p.id === socketId);
+  const isMyTurn = currentPlayerId === playerId;
+  const me = players.find((p) => p.id === playerId);
   const currentPlayer = players.find((p) => p.id === currentPlayerId);
   const myInJail = me?.inJail || false;
 
@@ -154,7 +154,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
         showMoneyDelta(result.playerId, -action.rent);
         showMoneyDelta(action.ownerId, +action.rent);
       } else if (action.type === 'buy_option') {
-        if (result.playerId === socketId) {
+        if (result.playerId === playerId) {
           setBuyOption({ spaceId: action.spaceId, price: action.price, name: spaceName });
         }
       } else if (action.type === 'own_property') {
@@ -184,7 +184,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
             setGoTrigger((v) => v + 1);
           }
         }
-        if (action.buyOption && result.playerId === socketId) {
+        if (action.buyOption && result.playerId === playerId) {
           const bName = BOARD_SPACES.find((s) => s.id === action.buyOption.spaceId)?.name || 'property';
           setBuyOption({ spaceId: action.buyOption.spaceId, price: action.buyOption.price, name: bName });
         }
@@ -199,7 +199,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
       }
     }
 
-    if (result.playerId === socketId) {
+    if (result.playerId === playerId) {
       setHasRolled(true);
     }
 
@@ -207,7 +207,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
     setPlayers((prev) => prev.map((p) =>
       p.id === result.playerId ? { ...p, position: result.newPosition, money: result.money } : p
     ));
-  }, [socketId, addToast, showMoneyDelta]);
+  }, [playerId, addToast, showMoneyDelta]);
 
   // ═══════════════════════════════════════════════════════════════
   // SOCKET EVENT LISTENERS
@@ -325,7 +325,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
     // ── Trading ───────────────────────────────────────────────────
     socket.on('TRADE_PROPOSED', (trade) => {
       setShowTradeDialog(false);
-      if (trade.toId === socketId) {
+      if (trade.toId === playerId) {
         setIncomingTrade(trade);
       } else {
         addLog(`💱 ${trade.fromName} proposed a trade to ${trade.toName}`);
@@ -402,7 +402,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
       ];
       events.forEach((e) => socket.off(e));
     };
-  }, [socketId, animateMovement, processResult]);
+  }, [playerId, animateMovement, processResult]);
 
   // ═══════════════════════════════════════════════════════════════
   // HANDLERS
@@ -479,7 +479,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
       {/* Trade Dialog */}
       {showTradeDialog && (
         <TradeDialog
-          myId={socketId}
+          myId={playerId}
           players={players}
           properties={properties}
           onPropose={handleProposeTrade}
@@ -496,7 +496,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
       {auction && (
         <AuctionDialog
           auction={auction}
-          myId={socketId}
+          myId={playerId}
           players={players}
           onBid={handleBid}
         />
@@ -523,7 +523,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
                 <span className="panel__dot" style={{ backgroundColor: currentPlayer.color }} />
                 <span>
                   <PlayerName name={currentPlayer.name} />
-                  {currentPlayer.id === socketId ? " — Your turn" : "'s turn"}
+                  {currentPlayer.id === playerId ? " — Your turn" : "'s turn"}
                   {currentPlayer.inJail && ' 🔒'}
                 </span>
               </>
@@ -615,7 +615,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
           <h3 className="panel__heading">Your Properties</h3>
           <PropertiesCarousel
             properties={properties}
-            playerId={socketId}
+            playerId={playerId}
             onPropertyClick={handleSquareClick}
             onBuild={handleBuildHouse}
             onMortgage={handleMortgage}
@@ -624,7 +624,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
         </div>
 
         {/* Stats Panel */}
-        <StatsPanel players={players} properties={properties} myId={socketId} />
+        <StatsPanel players={players} properties={properties} myId={playerId} />
 
         {/* Players */}
         <div className="panel__section">
@@ -639,7 +639,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
               >
                 <span className="panel__dot" style={{ backgroundColor: p.color }} />
                 <span className="panel__player-name">
-                  <PlayerName name={p.name} suffix={p.id === socketId ? ' (You)' : ''} />
+                  <PlayerName name={p.name} suffix={p.id === playerId ? ' (You)' : ''} />
                   {p.inJail && ' 🔒'}
                   {p.bankrupt && ' 💀'}
                 </span>
@@ -743,7 +743,7 @@ export default function Board({ initialState, roomCode, socketId, onReturnToLobb
         <PropertyCard
           spaceId={selectedProperty}
           owner={properties[selectedProperty] || null}
-          myId={socketId}
+          myId={playerId}
           onClose={() => setSelectedProperty(null)}
           onBuild={handleBuildHouse}
           onMortgage={handleMortgage}

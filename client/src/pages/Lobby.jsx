@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import socket from '../socket';
+import { getPlayerId, saveSession } from '../socket';
 import './Lobby.css';
 
 export default function Lobby({ onGameStart }) {
@@ -19,6 +20,7 @@ export default function Lobby({ onGameStart }) {
       setHostId(hostId);
       setInRoom(true);
       setError('');
+      saveSession(code, name.trim());
     });
 
     socket.on('PLAYER_JOINED', ({ players, hostId }) => {
@@ -33,7 +35,16 @@ export default function Lobby({ onGameStart }) {
       setHostId(hostId);
     });
 
+    socket.on('PLAYER_DISCONNECTED', ({ playerId: pid, players: updatedPlayers }) => {
+      setPlayers(updatedPlayers);
+    });
+
+    socket.on('PLAYER_RECONNECTED', ({ playerId: pid }) => {
+      // Will get full update from GAME_STATE_UPDATE
+    });
+
     socket.on('GAME_START', (state) => {
+      saveSession(roomCode || joinCode, name.trim());
       onGameStart(state, roomCode || joinCode);
     });
 
@@ -45,6 +56,8 @@ export default function Lobby({ onGameStart }) {
       socket.off('ROOM_CREATED');
       socket.off('PLAYER_JOINED');
       socket.off('PLAYER_LEFT');
+      socket.off('PLAYER_DISCONNECTED');
+      socket.off('PLAYER_RECONNECTED');
       socket.off('GAME_START');
       socket.off('ERROR');
     };
@@ -55,7 +68,7 @@ export default function Lobby({ onGameStart }) {
       setError('Enter your display name first.');
       return;
     }
-    socket.emit('CREATE_ROOM', { name: name.trim() });
+    socket.emit('CREATE_ROOM', { name: name.trim(), playerId: getPlayerId() });
   };
 
   const handleJoin = () => {
@@ -68,14 +81,14 @@ export default function Lobby({ onGameStart }) {
       return;
     }
     setRoomCode(joinCode.toUpperCase());
-    socket.emit('JOIN_ROOM', { code: joinCode.toUpperCase(), name: name.trim() });
+    socket.emit('JOIN_ROOM', { code: joinCode.toUpperCase(), name: name.trim(), playerId: getPlayerId() });
   };
 
   const handleStart = () => {
     socket.emit('START_GAME', { code: roomCode });
   };
 
-  const isHost = socket.id === hostId;
+  const isHost = getPlayerId() === hostId;
 
   return (
     <div className="lobby">

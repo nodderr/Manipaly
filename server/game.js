@@ -5,15 +5,24 @@ import {
   buildHouse, mortgageProperty, unmortgageProperty,
   proposeTrade, respondTrade,
   startAuction, placeBid, endAuction,
+  getPlayerIdFromSocket,
 } from './gameState.js';
 
 const auctionTimers = new Map(); // code → timeout
+
+// Resolve socket.id → persistent playerId
+function resolvePlayerId(socket) {
+  const pid = getPlayerIdFromSocket(socket.id);
+  if (!pid) socket.emit('ERROR', { message: 'Session expired. Please refresh.' });
+  return pid;
+}
 
 export function registerGameHandlers(io, socket) {
 
   // ── Roll Dice ────────────────────────────────────────────────
   socket.on('ROLL_DICE', ({ code }) => {
-    const result = rollDice(code, socket.id);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = rollDice(code, pid);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} rolled ${result.die1}+${result.die2}=${result.total}`);
@@ -29,7 +38,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Buy Property ─────────────────────────────────────────────
   socket.on('BUY_PROPERTY', ({ code, spaceId }) => {
-    const result = buyProperty(code, socket.id, spaceId);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = buyProperty(code, pid, spaceId);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.ownerName} bought space ${spaceId}`);
@@ -61,7 +71,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Place Bid ────────────────────────────────────────────────
   socket.on('PLACE_BID', ({ code, amount }) => {
-    const result = placeBid(code, socket.id, amount);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = placeBid(code, pid, amount);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     // Reset the 10-second timer on every new bid
@@ -80,7 +91,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── End Turn ─────────────────────────────────────────────────
   socket.on('END_TURN', ({ code }) => {
-    const result = endTurn(code, socket.id);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = endTurn(code, pid);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] Turn ended. Now: ${result.currentPlayerName}${result.inJail ? ' (in jail)' : ''}`);
@@ -90,7 +102,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Jail: Pay Fine ───────────────────────────────────────────
   socket.on('PAY_JAIL_FINE', ({ code }) => {
-    const result = payJailFine(code, socket.id);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = payJailFine(code, pid);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} paid jail fine`);
@@ -106,7 +119,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Jail: Roll for Doubles ───────────────────────────────────
   socket.on('ROLL_FOR_JAIL', ({ code }) => {
-    const result = rollForJail(code, socket.id);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = rollForJail(code, pid);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} rolled for jail: ${result.freed ? 'FREE' : 'STAY'}`);
@@ -122,7 +136,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Build House ──────────────────────────────────────────────
   socket.on('BUILD_HOUSE', ({ code, spaceId }) => {
-    const result = buildHouse(code, socket.id, spaceId);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = buildHouse(code, pid, spaceId);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} built house on ${spaceId} (now ${result.houses})`);
@@ -132,7 +147,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Mortgage Property ────────────────────────────────────────
   socket.on('MORTGAGE_PROPERTY', ({ code, spaceId }) => {
-    const result = mortgageProperty(code, socket.id, spaceId);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = mortgageProperty(code, pid, spaceId);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} mortgaged space ${spaceId}`);
@@ -142,7 +158,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Unmortgage Property ──────────────────────────────────────
   socket.on('UNMORTGAGE_PROPERTY', ({ code, spaceId }) => {
-    const result = unmortgageProperty(code, socket.id, spaceId);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = unmortgageProperty(code, pid, spaceId);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] ${result.playerName} unmortgaged space ${spaceId}`);
@@ -152,7 +169,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Propose Trade ────────────────────────────────────────────
   socket.on('PROPOSE_TRADE', ({ code, targetId, offerProps, offerMoney, wantProps, wantMoney }) => {
-    const result = proposeTrade(code, socket.id, { targetId, offerProps, offerMoney, wantProps, wantMoney });
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = proposeTrade(code, pid, { targetId, offerProps, offerMoney, wantProps, wantMoney });
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] Trade proposed: ${result.trade.fromName} → ${result.trade.toName}`);
@@ -161,7 +179,8 @@ export function registerGameHandlers(io, socket) {
 
   // ── Respond to Trade ─────────────────────────────────────────
   socket.on('RESPOND_TRADE', ({ code, accept }) => {
-    const result = respondTrade(code, socket.id, accept);
+    const pid = resolvePlayerId(socket); if (!pid) return;
+    const result = respondTrade(code, pid, accept);
     if (result.error) { socket.emit('ERROR', { message: result.error }); return; }
 
     console.log(`[GAME] Trade ${result.accepted ? 'accepted' : 'rejected'}`);

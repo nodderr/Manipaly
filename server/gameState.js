@@ -3,6 +3,10 @@
 // trading, auctions, and bankruptcy/win conditions.
 
 const rooms = new Map();
+const socketToPlayer = new Map();   // socketId → { playerId, roomCode }
+const disconnectTimers = new Map(); // playerId → timeoutId
+
+const DISCONNECT_GRACE_MS = 60000;  // 60 seconds
 
 const PLAYER_COLORS = [
   '#FF6B6B', '#4ECDC4', '#FFE66D', '#A78BFA',
@@ -115,33 +119,35 @@ function generateCode() {
 // ROOM MANAGEMENT
 // ═══════════════════════════════════════════════════════════════════
 
-export function createRoom(hostSocketId, hostName) {
+export function createRoom(playerId, socketId, hostName) {
   let code = generateCode();
   while (rooms.has(code)) code = generateCode();
 
   const room = {
     code,
-    hostId: hostSocketId,
+    hostId: playerId,
     players: [{
-      id: hostSocketId, name: hostName, color: PLAYER_COLORS[0],
+      id: playerId, socketId, name: hostName, color: PLAYER_COLORS[0],
       position: 0, money: STARTING_MONEY,
       inJail: false, jailTurns: 0, bankrupt: false,
+      disconnected: false,
     }],
     status: 'waiting',
     maxPlayers: 8,
     currentPlayerIndex: 0,
-    properties: {},     // { spaceId: { ownerId, ownerName, price, rent, houses, mortgaged } }
-    pendingTrade: null,  // { id, fromId, toId, offerProps, offerMoney, wantProps, wantMoney }
-    auction: null,       // { spaceId, bids: {playerId: amount}, highBid, highBidder, timer }
+    properties: {},
+    pendingTrade: null,
+    auction: null,
     winner: null,
     log: [],
   };
 
+  socketToPlayer.set(socketId, { playerId, roomCode: code });
   rooms.set(code, room);
   return room;
 }
 
-export function joinRoom(code, socketId, playerName) {
+export function joinRoom(code, playerId, socketId, playerName) {
   const room = rooms.get(code);
   if (!room) return { success: false, error: 'Room not found.' };
   if (room.status === 'playing') return { success: false, error: 'Game already started.' };
@@ -149,36 +155,114 @@ export function joinRoom(code, socketId, playerName) {
 
   const colorIndex = room.players.length % PLAYER_COLORS.length;
   room.players.push({
-    id: socketId, name: playerName, color: PLAYER_COLORS[colorIndex],
+    id: playerId, socketId, name: playerName, color: PLAYER_COLORS[colorIndex],
     position: 0, money: STARTING_MONEY,
     inJail: false, jailTurns: 0, bankrupt: false,
+    disconnected: false,
   });
 
+  socketToPlayer.set(socketId, { playerId, roomCode: code });
   return { success: true, room };
 }
 
-export function removePlayer(socketId) {
+// Resolve socket.id → playerId
+export function getPlayerIdFromSocket(socketId) {
+  return socketToPlayer.get(socketId)?.playerId || null;
+}
+
+// Find which room a player is in
+export function findRoomByPlayerId(playerId) {
   for (const [code, room] of rooms) {
-    const idx = room.players.findIndex((p) => p.id === socketId);
-    if (idx === -1) continue;
-
-    room.players.splice(idx, 1);
-
-    if (room.players.length === 0) {
-      rooms.delete(code);
-      return { room: null, code };
-    }
-
-    if (room.hostId === socketId) room.hostId = room.players[0].id;
-
-    if (room.status === 'playing') {
-      if (room.currentPlayerIndex >= room.players.length) room.currentPlayerIndex = 0;
-      checkWinCondition(room);
-    }
-
-    return { room, code };
+    if (room.players.some(p => p.id === playerId)) return { room, code };
   }
   return null;
+}
+
+// Called on socket disconnect — starts grace period instead of removing
+export function disconnectPlayer(socketId) {
+  const mapping = socketToPlayer.get(socketId);
+  if (!mapping) return null;
+
+  const { playerId, roomCode } = mapping;
+  const room = rooms.get(roomCode);
+  if (!room) { socketToPlayer.delete(socketId); return null; }
+
+  const player = room.players.find(p => p.id === playerId);
+  if (!player) { socketToPlayer.delete(socketId); return null; }
+
+  socketToPlayer.delete(socketId);
+
+  // In lobby (waiting) — remove immediately
+  if (room.status === 'waiting') {
+    const idx = room.players.indexOf(player);
+    room.players.splice(idx, 1);
+    if (room.players.length === 0) {
+      rooms.delete(roomCode);
+      return { room: null, code: roomCode, permanent: true };
+    }
+    if (room.hostId === playerId) room.hostId = room.players[0].id;
+    return { room, code: roomCode, permanent: true };
+  }
+
+  // In-game — mark disconnected, start grace timer
+  player.disconnected = true;
+
+  const timer = setTimeout(() => {
+    disconnectTimers.delete(playerId);
+    // Permanently remove after grace period
+    forceRemovePlayer(roomCode, playerId);
+  }, DISCONNECT_GRACE_MS);
+
+  disconnectTimers.set(playerId, timer);
+
+  return { room, code: roomCode, permanent: false, playerId };
+}
+
+// Permanently remove a player (after grace timeout or manual leave)
+function forceRemovePlayer(code, playerId) {
+  const room = rooms.get(code);
+  if (!room) return;
+
+  const idx = room.players.findIndex(p => p.id === playerId);
+  if (idx === -1) return;
+
+  room.players.splice(idx, 1);
+
+  if (room.players.length === 0) {
+    rooms.delete(code);
+    return;
+  }
+
+  if (room.hostId === playerId) room.hostId = room.players[0].id;
+
+  if (room.status === 'playing') {
+    if (room.currentPlayerIndex >= room.players.length) room.currentPlayerIndex = 0;
+    checkWinCondition(room);
+  }
+}
+
+// Reconnect a player with a new socket
+export function reconnectPlayer(playerId, newSocketId) {
+  const found = findRoomByPlayerId(playerId);
+  if (!found) return { success: false, error: 'No active session found.' };
+
+  const { room, code } = found;
+  const player = room.players.find(p => p.id === playerId);
+  if (!player) return { success: false, error: 'Player not found.' };
+
+  // Cancel disconnect timer if active
+  const timer = disconnectTimers.get(playerId);
+  if (timer) {
+    clearTimeout(timer);
+    disconnectTimers.delete(playerId);
+  }
+
+  // Swap socket
+  player.socketId = newSocketId;
+  player.disconnected = false;
+  socketToPlayer.set(newSocketId, { playerId, roomCode: code });
+
+  return { success: true, room, code };
 }
 
 export function getRoom(code) { return rooms.get(code) || null; }
@@ -1004,6 +1088,7 @@ export function getGameState(code) {
       id: p.id, name: p.name, color: p.color,
       position: p.position, money: p.money,
       inJail: p.inJail, jailTurns: p.jailTurns, bankrupt: p.bankrupt,
+      disconnected: p.disconnected || false,
     })),
     currentPlayerIndex: room.currentPlayerIndex,
     currentPlayerId: room.players[room.currentPlayerIndex]?.id,
