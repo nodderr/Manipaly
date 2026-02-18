@@ -15,47 +15,20 @@ const JAIL_FINE = 50;
 const MAX_JAIL_TURNS = 3;
 const AUCTION_DURATION_MS = 10000;
 
-// ── Property data with rent tiers ────────────────────────────────
-const PROPERTY_DATA = {
-  // Brown
-  1:  { price: 60,  rent: [2, 10, 30, 90, 160, 250],     houseCost: 50,  mortgage: 30,  group: 'brown' },
-  3:  { price: 60,  rent: [4, 20, 60, 180, 320, 450],    houseCost: 50,  mortgage: 30,  group: 'brown' },
-  // Light Blue
-  6:  { price: 100, rent: [6, 30, 90, 270, 400, 550],    houseCost: 50,  mortgage: 50,  group: 'lightblue' },
-  8:  { price: 100, rent: [6, 30, 90, 270, 400, 550],    houseCost: 50,  mortgage: 50,  group: 'lightblue' },
-  9:  { price: 120, rent: [8, 40, 100, 300, 450, 600],   houseCost: 50,  mortgage: 60,  group: 'lightblue' },
-  // Pink
-  11: { price: 140, rent: [10, 50, 150, 450, 625, 750],  houseCost: 100, mortgage: 70,  group: 'pink' },
-  13: { price: 140, rent: [10, 50, 150, 450, 625, 750],  houseCost: 100, mortgage: 70,  group: 'pink' },
-  14: { price: 160, rent: [12, 60, 180, 500, 700, 900],  houseCost: 100, mortgage: 80,  group: 'pink' },
-  // Orange
-  16: { price: 180, rent: [14, 70, 200, 550, 750, 950],  houseCost: 100, mortgage: 90,  group: 'orange' },
-  18: { price: 180, rent: [14, 70, 200, 550, 750, 950],  houseCost: 100, mortgage: 90,  group: 'orange' },
-  19: { price: 200, rent: [16, 80, 220, 600, 800, 1000], houseCost: 100, mortgage: 100, group: 'orange' },
-  // Red
-  21: { price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, mortgage: 110, group: 'red' },
-  23: { price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, mortgage: 110, group: 'red' },
-  24: { price: 240, rent: [20, 100, 300, 750, 925, 1100],houseCost: 150, mortgage: 120, group: 'red' },
-  // Yellow
-  26: { price: 260, rent: [22, 110, 330, 800, 975, 1150],houseCost: 150, mortgage: 130, group: 'yellow' },
-  27: { price: 260, rent: [22, 110, 330, 800, 975, 1150],houseCost: 150, mortgage: 130, group: 'yellow' },
-  29: { price: 280, rent: [24, 120, 360, 850, 1025, 1200],houseCost: 150, mortgage: 140, group: 'yellow' },
-  // Green
-  31: { price: 300, rent: [26, 130, 390, 900, 1100, 1275],houseCost: 200, mortgage: 150, group: 'green' },
-  32: { price: 300, rent: [26, 130, 390, 900, 1100, 1275],houseCost: 200, mortgage: 150, group: 'green' },
-  34: { price: 320, rent: [28, 150, 450, 1000, 1200, 1400],houseCost: 200, mortgage: 160, group: 'green' },
-  // Dark Blue
-  37: { price: 350, rent: [35, 175, 500, 1100, 1300, 1500],houseCost: 200, mortgage: 175, group: 'darkblue' },
-  39: { price: 400, rent: [50, 200, 600, 1400, 1700, 2000],houseCost: 200, mortgage: 200, group: 'darkblue' },
-  // Railroads
-  5:  { price: 200, rent: [25, 50, 100, 200], mortgage: 100, group: 'railroad', isRailroad: true },
-  15: { price: 200, rent: [25, 50, 100, 200], mortgage: 100, group: 'railroad', isRailroad: true },
-  25: { price: 200, rent: [25, 50, 100, 200], mortgage: 100, group: 'railroad', isRailroad: true },
-  35: { price: 200, rent: [25, 50, 100, 200], mortgage: 100, group: 'railroad', isRailroad: true },
-  // Utilities
-  12: { price: 150, rent: [4, 10], mortgage: 75, group: 'utility', isUtility: true },
-  28: { price: 150, rent: [4, 10], mortgage: 75, group: 'utility', isUtility: true },
-};
+// ── Property data — derived from the single source of truth ─────
+// Edit ONLY: client/src/data/propertyDetails.js
+import PROPERTY_DETAILS from '../client/src/data/propertyDetails.js';
+
+const PROPERTY_DATA = {};
+for (const [id, p] of Object.entries(PROPERTY_DETAILS)) {
+  if (p.isRailroad) {
+    PROPERTY_DATA[id] = { price: p.price, rent: [p.rent, p.rent2rr, p.rent3rr, p.rent4rr], mortgage: p.mortgage, group: p.group, isRailroad: true };
+  } else if (p.isUtility) {
+    PROPERTY_DATA[id] = { price: p.price, rent: [4, 10], mortgage: p.mortgage, group: p.group, isUtility: true };
+  } else {
+    PROPERTY_DATA[id] = { price: p.price, rent: [p.rent, p.rent1, p.rent2, p.rent3, p.rent4, p.rentHotel], houseCost: p.houseCost, mortgage: p.mortgage, group: p.group };
+  }
+}
 
 // Tax spaces
 const TAX_AMOUNTS = { 4: 200, 38: 200 };
@@ -82,13 +55,8 @@ const CHANCE_CARDS = [
   { id: 'ch14', text: 'Deposit Kat Gaya: 25 per house, 100 per hotel.', action: 'repairs', perHouse: 25, perHotel: 100 },
   { id: 'ch15', text: 'You are assessed for street repairs: $40 per house, $115 per hotel.', action: 'repairs', perHouse: 40, perHotel: 115 },
   { id: 'ch16', text: 'Sneak maar liya : Get out of Jail free.',                            action: 'get_out_of_jail' },
-  { id: 'ch18',  text: 'Sneak nahi maar paaye : Go to Jail',                 action: 'go_to_jail' },
+  { id: 'ch18', text: 'Sneak nahi maar paaye : Go to Jail',                 action: 'go_to_jail' },
   { id: 'ch17', text: 'Innova Thook gayi Pay 500',                          action: 'pay', amount: 500 },
-
-  
-  
-  
-  
 ];
 
 const CHEST_CARDS = [
