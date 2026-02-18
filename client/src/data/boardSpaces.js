@@ -1,54 +1,68 @@
-// ─── Board Data: 40 Monopoly-style spaces ──────────────────────
-// Each space: id, name, type, group (color), price
+import PROPERTY_DETAILS from './propertyDetails';
 
-const BOARD_SPACES = [
-  // ── Bottom Row (right to left: GO is bottom-right corner) ─────
-  { id: 0,  name: 'GO',              type: 'corner',   group: null,       price: null },
-  { id: 1,  name: 'Old Kent Road',   type: 'property', group: 'brown',    price: 60 },
-  { id: 2,  name: 'Community Chest', type: 'chest',    group: null,       price: null },
-  { id: 3,  name: 'Whitechapel Rd',  type: 'property', group: 'brown',    price: 60 },
-  { id: 4,  name: 'Income Tax',      type: 'tax',      group: null,       price: 200 },
-  { id: 5,  name: "King's Cross",    type: 'railroad', group: 'railroad', price: 200 },
-  { id: 6,  name: 'The Angel',       type: 'property', group: 'lightblue', price: 100 },
-  { id: 7,  name: 'Chance',          type: 'chance',   group: null,       price: null },
-  { id: 8,  name: 'Euston Road',     type: 'property', group: 'lightblue', price: 100 },
-  { id: 9,  name: 'Pentonville Rd',  type: 'property', group: 'lightblue', price: 120 },
+// Base layout: defines the sequence and types of spaces (0 to 39)
+const LAYOUT = [
+  // ── Bottom Row ────────────────────────────────────────────────
+  { id: 0,  name: 'GO',              type: 'corner' },
+  { id: 1,  /* property */           type: 'property' },
+  { id: 2,  name: 'Community Chest', type: 'chest' },
+  { id: 3,  /* property */           type: 'property' },
+  { id: 4,  name: 'Income Tax',      type: 'tax',      price: 200 },
+  { id: 5,  /* railroad */           type: 'railroad' },
+  { id: 6,  /* property */           type: 'property' },
+  { id: 7,  name: 'Chance',          type: 'chance' },
+  { id: 8,  /* property */           type: 'property' },
+  { id: 9,  /* property */           type: 'property' },
 
-  // ── Left Column (bottom to top) ───────────────────────────────
-  { id: 10, name: 'Jail',            type: 'corner',   group: null,       price: null },
-  { id: 11, name: 'Pall Mall',       type: 'property', group: 'pink',     price: 140 },
-  { id: 12, name: 'Electric Co.',    type: 'utility',  group: 'utility',  price: 150 },
-  { id: 13, name: 'Whitehall',       type: 'property', group: 'pink',     price: 140 },
-  { id: 14, name: 'Northumberland',  type: 'property', group: 'pink',     price: 160 },
-  { id: 15, name: 'Marylebone Stn',  type: 'railroad', group: 'railroad', price: 200 },
-  { id: 16, name: 'Bow Street',      type: 'property', group: 'orange',   price: 180 },
-  { id: 17, name: 'Community Chest', type: 'chest',    group: null,       price: null },
-  { id: 18, name: 'Marlborough St',  type: 'property', group: 'orange',   price: 180 },
-  { id: 19, name: 'Vine Street',     type: 'property', group: 'orange',   price: 200 },
+  // ── Left Column ───────────────────────────────────────────────
+  { id: 10, name: 'Jail',            type: 'corner' },
+  { id: 11, /* property */           type: 'property' },
+  { id: 12, /* utility */            type: 'utility' },
+  { id: 13, /* property */           type: 'property' },
+  { id: 14, /* property */           type: 'property' },
+  { id: 15, /* railroad */           type: 'railroad' },
+  { id: 16, /* property */           type: 'property' },
+  { id: 17, name: 'Community Chest', type: 'chest' },
+  { id: 18, /* property */           type: 'property' },
+  { id: 19, /* property */           type: 'property' },
 
-  // ── Top Row (left to right) ───────────────────────────────────
-  { id: 20, name: 'Free Parking',    type: 'corner',   group: null,       price: null },
-  { id: 21, name: 'Strand',          type: 'property', group: 'red',      price: 220 },
-  { id: 22, name: 'Chance',          type: 'chance',   group: null,       price: null },
-  { id: 23, name: 'Fleet Street',    type: 'property', group: 'red',      price: 220 },
-  { id: 24, name: 'Trafalgar Sq',    type: 'property', group: 'red',      price: 240 },
-  { id: 25, name: 'Fenchurch Stn',   type: 'railroad', group: 'railroad', price: 200 },
-  { id: 26, name: 'Leicester Sq',    type: 'property', group: 'yellow',   price: 260 },
-  { id: 27, name: 'Coventry St',     type: 'property', group: 'yellow',   price: 260 },
-  { id: 28, name: 'Water Works',     type: 'utility',  group: 'utility',  price: 150 },
-  { id: 29, name: 'Piccadilly',      type: 'property', group: 'yellow',   price: 280 },
+  // ── Top Row ───────────────────────────────────────────────────
+  { id: 20, name: 'Free Parking',    type: 'corner' },
+  { id: 21, /* property */           type: 'property' },
+  { id: 22, name: 'Chance',          type: 'chance' },
+  { id: 23, /* property */           type: 'property' },
+  { id: 24, /* property */           type: 'property' },
+  { id: 25, /* railroad */           type: 'railroad' },
+  { id: 26, /* property */           type: 'property' },
+  { id: 27, /* property */           type: 'property' },
+  { id: 28, /* utility */            type: 'utility' },
+  { id: 29, /* property */           type: 'property' },
 
-  // ── Right Column (top to bottom) ──────────────────────────────
-  { id: 30, name: 'Go To Jail',      type: 'corner',   group: null,       price: null },
-  { id: 31, name: 'Regent Street',   type: 'property', group: 'green',    price: 300 },
-  { id: 32, name: 'Oxford Street',   type: 'property', group: 'green',    price: 300 },
-  { id: 33, name: 'Community Chest', type: 'chest',    group: null,       price: null },
-  { id: 34, name: 'Bond Street',     type: 'property', group: 'green',    price: 320 },
-  { id: 35, name: 'Liverpool Stn',   type: 'railroad', group: 'railroad', price: 200 },
-  { id: 36, name: 'Chance',          type: 'chance',   group: null,       price: null },
-  { id: 37, name: 'Park Lane',       type: 'property', group: 'darkblue', price: 350 },
-  { id: 38, name: 'Super Tax',       type: 'tax',      group: null,       price: 200 },
-  { id: 39, name: 'Mayfair',         type: 'property', group: 'darkblue', price: 400 },
+  // ── Right Column ──────────────────────────────────────────────
+  { id: 30, name: 'Go To Jail',      type: 'corner' },
+  { id: 31, /* property */           type: 'property' },
+  { id: 32, /* property */           type: 'property' },
+  { id: 33, name: 'Community Chest', type: 'chest' },
+  { id: 34, /* property */           type: 'property' },
+  { id: 35, /* railroad */           type: 'railroad' },
+  { id: 36, name: 'Chance',          type: 'chance' },
+  { id: 37, /* property */           type: 'property' },
+  { id: 38, name: 'Super Tax',       type: 'tax',      price: 200 },
+  { id: 39, /* property */           type: 'property' },
 ];
+
+// Merge the static layout with the dynamic property details
+const BOARD_SPACES = LAYOUT.map(space => {
+  const details = PROPERTY_DETAILS[space.id];
+  if (details) {
+    return {
+      ...space,
+      name: details.name,
+      group: details.group,
+      price: details.price,
+    };
+  }
+  return { ...space, group: space.group || null, price: space.price || null };
+});
 
 export default BOARD_SPACES;
