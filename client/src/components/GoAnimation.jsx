@@ -36,7 +36,7 @@ export default function GoAnimation({ trigger }) {
           💵
         </div>
       ))}
-      <div className="go-anim__text">+$200</div>
+      <div className="go-anim__text">+₹200</div>
     </div>
   );
 }

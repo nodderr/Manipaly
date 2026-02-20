@@ -59,7 +59,7 @@ export default function AuctionDialog({ auction, myId, players, onBid }) {
         {/* Current bid */}
         <div className="auction__current">
           {auction.highBidder ? (
-            <>{auction.highBidderName}: <strong>${auction.highBid}</strong></>
+            <>{auction.highBidderName}: <strong>₹{auction.highBid}</strong></>
           ) : (
             <span className="auction__no-bids">No bids yet</span>
           )}

@@ -99,7 +99,7 @@ export default function BoardSquare({ space, players, edge, owner, ownerColor, o
         )}
 
         {space.price && (
-          <span className="sq__price">${space.price}</span>
+          <span className="sq__price">₹{space.price}</span>
         )}
 
         {owner && !isMortgaged && (

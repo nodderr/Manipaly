@@ -53,7 +53,7 @@ export default function TradeDialog({ myId, players, properties, onPropose, onCl
           >
             <option value="">Select player...</option>
             {otherPlayers.map((p) => (
-              <option key={p.id} value={p.id}>{p.name} (${p.money})</option>
+              <option key={p.id} value={p.id}>{p.name} (₹{p.money})</option>
             ))}
           </select>
         </div>
@@ -64,7 +64,7 @@ export default function TradeDialog({ myId, players, properties, onPropose, onCl
             <div className="trade__column">
               <div className="trade__col-header">🎁 You Offer</div>
               <div className="trade__money-row">
-                <span>$</span>
+                <span>₹</span>
                 <input
                   type="number" min="0" max={me?.money || 0}
                   className="trade__money-input"
@@ -90,7 +90,7 @@ export default function TradeDialog({ myId, players, properties, onPropose, onCl
             <div className="trade__column">
               <div className="trade__col-header">🔄 You Want</div>
               <div className="trade__money-row">
-                <span>$</span>
+                <span>₹</span>
                 <input
                   type="number" min="0" max={target?.money || 0}
                   className="trade__money-input"
@@ -139,7 +139,7 @@ export function TradePrompt({ trade, onRespond }) {
         <div className="trade__summary">
           <div className="trade__summary-col">
             <strong>They offer:</strong>
-            {trade.offerMoney > 0 && <div className="trade__summary-item">${trade.offerMoney}</div>}
+            {trade.offerMoney > 0 && <div className="trade__summary-item">₹{trade.offerMoney}</div>}
             {trade.offerProps.map((id) => {
               const space = BOARD_SPACES.find((s) => s.id === id);
               return <div key={id} className="trade__summary-item">{space?.name || `Space ${id}`}</div>;
@@ -149,7 +149,7 @@ export function TradePrompt({ trade, onRespond }) {
           <div className="trade__summary-arrow">⇄</div>
           <div className="trade__summary-col">
             <strong>They want:</strong>
-            {trade.wantMoney > 0 && <div className="trade__summary-item">${trade.wantMoney}</div>}
+            {trade.wantMoney > 0 && <div className="trade__summary-item">₹{trade.wantMoney}</div>}
             {trade.wantProps.map((id) => {
               const space = BOARD_SPACES.find((s) => s.id === id);
               return <div key={id} className="trade__summary-item">{space?.name || `Space ${id}`}</div>;

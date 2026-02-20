@@ -83,9 +83,9 @@ export default function PropertiesCarousel({ properties, playerId, onPropertyCli
                     />
                     <div className="accordion__item-info">
                       <span className="accordion__item-name">{prop.name}</span>
-                      <span className="accordion__item-rent">Rent ${prop.rent}</span>
+                      <span className="accordion__item-rent">Rent ₹{prop.rent}</span>
                     </div>
-                    <span className="accordion__item-price">${prop.price}</span>
+                    <span className="accordion__item-price">₹{prop.price}</span>
                   </div>
                 ))}
               </div>

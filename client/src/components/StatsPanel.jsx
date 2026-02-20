@@ -61,9 +61,9 @@ export default function StatsPanel({ players, properties, myId }) {
                     <span className="stats__dot" style={{ background: s.color }} />
                     {s.name}
                   </td>
-                  <td className="stats__money">${s.cash}</td>
+                  <td className="stats__money">₹{s.cash}</td>
                   <td>{s.propCount}</td>
-                  <td className="stats__networth">${s.netWorth}</td>
+                  <td className="stats__networth">₹{s.netWorth}</td>
                 </tr>
               ))}
             </tbody>

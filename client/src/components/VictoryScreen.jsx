@@ -21,7 +21,7 @@ export default function VictoryScreen({ winnerName, players, onClose }) {
                   <span className="victory__rank">{p.bankrupt ? '💀' : `#${i + 1}`}</span>
                   <span className="victory__dot" style={{ background: p.color }} />
                   <span className="victory__name">{p.name}</span>
-                  <span className="victory__cash">${p.money}</span>
+                  <span className="victory__cash">₹{p.money}</span>
                 </div>
               ))}
           </div>

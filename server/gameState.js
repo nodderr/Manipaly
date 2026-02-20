@@ -60,29 +60,29 @@ const CHANCE_CARDS = [
   { id: 'ch12', text: 'ID card gum gaya : Pay 200.',                         action: 'pay', amount: 200 },
   { id: 'ch13', text: 'Sutta Marr liya : Fine 20.',                       action: 'pay', amount: 20 },
   { id: 'ch14', text: 'Deposit Kat Gaya: 25 per house, 100 per hotel.', action: 'repairs', perHouse: 25, perHotel: 100 },
-  { id: 'ch15', text: 'You are assessed for street repairs: $40 per house, $115 per hotel.', action: 'repairs', perHouse: 40, perHotel: 115 },
+  { id: 'ch15', text: 'You are assessed for street repairs: ₹40 per house, ₹115 per hotel.', action: 'repairs', perHouse: 40, perHotel: 115 },
   { id: 'ch16', text: 'Sneak maar liya : Get out of Jail free.',                            action: 'get_out_of_jail' },
   { id: 'ch18', text: 'Sneak nahi maar paaye : Go to Jail',                 action: 'go_to_jail' },
   { id: 'ch17', text: 'Innova Thook gayi Pay 500',                          action: 'pay', amount: 500 },
 ];
 
 const CHEST_CARDS = [
-  { id: 'cc1',  text: 'Advance to GO. Collect $200.',                     action: 'move', destination: 0 },
-  { id: 'cc2',  text: 'Bank error in your favour. Collect $200.',         action: 'collect', amount: 200 },
-  { id: 'cc3',  text: "Doctor's fee. Pay $50.",                           action: 'pay', amount: 50 },
-  { id: 'cc4',  text: 'From sale of stock you get $50.',                  action: 'collect', amount: 50 },
+  { id: 'cc1',  text: 'Advance to GO. Collect ₹200.',                     action: 'move', destination: 0 },
+  { id: 'cc2',  text: 'Bank error in your favour. Collect ₹200.',         action: 'collect', amount: 200 },
+  { id: 'cc3',  text: "Doctor's fee. Pay ₹50.",                           action: 'pay', amount: 50 },
+  { id: 'cc4',  text: 'From sale of stock you get ₹50.',                  action: 'collect', amount: 50 },
   { id: 'cc5',  text: 'Get out of Jail free.',                            action: 'get_out_of_jail' },
   { id: 'cc6',  text: 'Go to Jail. Go directly to Jail.',                 action: 'go_to_jail' },
-  { id: 'cc7',  text: 'Grand Opera Night. Collect $50 from every player.', action: 'collect_from_all', amount: 50 },
-  { id: 'cc8',  text: 'Holiday Fund matures. Collect $100.',              action: 'collect', amount: 100 },
-  { id: 'cc9',  text: 'Income tax refund. Collect $20.',                  action: 'collect', amount: 20 },
-  { id: 'cc10', text: "It's your birthday. Collect $10 from every player.", action: 'collect_from_all', amount: 10 },
-  { id: 'cc11', text: 'Life insurance matures. Collect $100.',            action: 'collect', amount: 100 },
-  { id: 'cc12', text: 'Hospital fees. Pay $100.',                         action: 'pay', amount: 100 },
-  { id: 'cc13', text: 'School fees. Pay $50.',                            action: 'pay', amount: 50 },
-  { id: 'cc14', text: 'Receive $25 consultancy fee.',                     action: 'collect', amount: 25 },
-  { id: 'cc15', text: 'You have won second prize in a beauty contest. Collect $10.', action: 'collect', amount: 10 },
-  { id: 'cc16', text: 'You inherit $100.',                                action: 'collect', amount: 100 },
+  { id: 'cc7',  text: 'Grand Opera Night. Collect ₹50 from every player.', action: 'collect_from_all', amount: 50 },
+  { id: 'cc8',  text: 'Holiday Fund matures. Collect ₹100.',              action: 'collect', amount: 100 },
+  { id: 'cc9',  text: 'Income tax refund. Collect ₹20.',                  action: 'collect', amount: 20 },
+  { id: 'cc10', text: "It's your birthday. Collect ₹10 from every player.", action: 'collect_from_all', amount: 10 },
+  { id: 'cc11', text: 'Life insurance matures. Collect ₹100.',            action: 'collect', amount: 100 },
+  { id: 'cc12', text: 'Hospital fees. Pay ₹100.',                         action: 'pay', amount: 100 },
+  { id: 'cc13', text: 'School fees. Pay ₹50.',                            action: 'pay', amount: 50 },
+  { id: 'cc14', text: 'Receive ₹25 consultancy fee.',                     action: 'collect', amount: 25 },
+  { id: 'cc15', text: 'You have won second prize in a beauty contest. Collect ₹10.', action: 'collect', amount: 10 },
+  { id: 'cc16', text: 'You inherit ₹100.',                                action: 'collect', amount: 100 },
 ];
 
 function shuffleCards(cards) {
@@ -470,7 +470,7 @@ export function rollDice(code, socketId) {
     currentPlayer.money -= taxAmount;
     result.money = currentPlayer.money;
     result.landingAction = { type: 'tax', amount: taxAmount, money: currentPlayer.money };
-    room.log.push(`${currentPlayer.name} paid $${taxAmount} tax`);
+    room.log.push(`${currentPlayer.name} paid ₹${taxAmount} tax`);
 
     if (currentPlayer.money < 0) {
       goBankrupt(room, currentPlayer);
@@ -516,7 +516,7 @@ export function rollDice(code, socketId) {
               result.money = currentPlayer.money;
               result.landingAction.rent = rent;
               result.landingAction.ownerName = owner.name;
-              room.log.push(`${currentPlayer.name} paid $${rent} rent to ${owner.name}`);
+              room.log.push(`${currentPlayer.name} paid ₹${rent} rent to ${owner.name}`);
               if (currentPlayer.money < 0) {
                 goBankrupt(room, currentPlayer);
                 result.landingAction.bankrupt = true;
@@ -582,7 +582,7 @@ export function rollDice(code, socketId) {
         currentPlayer.money -= cost;
         result.money = currentPlayer.money;
         result.landingAction.moneyDelta = -cost;
-        room.log.push(`${currentPlayer.name} paid $${cost} for repairs`);
+        room.log.push(`${currentPlayer.name} paid ₹${cost} for repairs`);
         if (currentPlayer.money < 0) {
           goBankrupt(room, currentPlayer);
           result.landingAction.bankrupt = true;
@@ -621,7 +621,7 @@ export function rollDice(code, socketId) {
           ownerName: owner.name, ownerId: owner.id,
           payerMoney: currentPlayer.money, ownerMoney: owner.money,
         };
-        room.log.push(`${currentPlayer.name} paid $${rent} rent to ${owner.name}`);
+        room.log.push(`${currentPlayer.name} paid ₹${rent} rent to ${owner.name}`);
 
         if (currentPlayer.money < 0) {
           goBankrupt(room, currentPlayer);
@@ -655,7 +655,7 @@ export function payJailFine(code, socketId) {
   player.inJail = false;
   player.jailTurns = 0;
 
-  room.log.push(`${player.name} paid $${JAIL_FINE} to get out of jail`);
+  room.log.push(`${player.name} paid ₹${JAIL_FINE} to get out of jail`);
 
   if (player.money < 0) {
     goBankrupt(room, player);
@@ -764,7 +764,7 @@ export function rollForJail(code, socketId) {
     player.money -= JAIL_FINE;
     player.inJail = false;
     player.jailTurns = 0;
-    room.log.push(`${player.name} couldn't roll doubles — forced to pay $${JAIL_FINE}`);
+    room.log.push(`${player.name} couldn't roll doubles — forced to pay ₹${JAIL_FINE}`);
 
     if (player.money < 0) {
       goBankrupt(room, player);
@@ -818,7 +818,7 @@ export function buyProperty(code, socketId, spaceId) {
     mortgaged: false,
   };
 
-  room.log.push(`${currentPlayer.name} bought space ${spaceId} for $${propData.price}`);
+  room.log.push(`${currentPlayer.name} bought space ${spaceId} for ₹${propData.price}`);
 
   return {
     success: true, spaceId,
@@ -864,13 +864,13 @@ export function buildHouse(code, socketId, spaceId) {
   }
 
   const cost = data.houseCost;
-  if (player.money < cost) return { error: `Not enough money. Need $${cost}.` };
+  if (player.money < cost) return { error: `Not enough money. Need ₹${cost}.` };
 
   player.money -= cost;
   prop.houses++;
 
   const level = prop.houses === 5 ? 'hotel' : `house #${prop.houses}`;
-  room.log.push(`${player.name} built ${level} on space ${spaceId} for $${cost}`);
+  room.log.push(`${player.name} built ${level} on space ${spaceId} for ₹${cost}`);
 
   return {
     success: true, spaceId, houses: prop.houses, cost,
@@ -899,7 +899,7 @@ export function mortgageProperty(code, socketId, spaceId) {
   prop.mortgaged = true;
   player.money += data.mortgage;
 
-  room.log.push(`${player.name} mortgaged space ${spaceId} for $${data.mortgage}`);
+  room.log.push(`${player.name} mortgaged space ${spaceId} for ₹${data.mortgage}`);
 
   return {
     success: true, spaceId, mortgaged: true,
@@ -922,12 +922,12 @@ export function unmortgageProperty(code, socketId, spaceId) {
   if (!prop.mortgaged) return { error: 'Not mortgaged.' };
 
   const cost = Math.ceil(data.mortgage * 1.1); // 10% interest
-  if (player.money < cost) return { error: `Not enough money. Need $${cost}.` };
+  if (player.money < cost) return { error: `Not enough money. Need ₹${cost}.` };
 
   prop.mortgaged = false;
   player.money -= cost;
 
-  room.log.push(`${player.name} unmortgaged space ${spaceId} for $${cost}`);
+  room.log.push(`${player.name} unmortgaged space ${spaceId} for ₹${cost}`);
 
   return {
     success: true, spaceId, mortgaged: false,
@@ -1056,7 +1056,7 @@ export function placeBid(code, socketId, amount) {
 
   const player = room.players.find((p) => p.id === socketId);
   if (!player || player.bankrupt) return { error: 'Invalid player.' };
-  if (amount <= room.auction.highBid) return { error: `Bid must be higher than $${room.auction.highBid}.` };
+  if (amount <= room.auction.highBid) return { error: `Bid must be higher than ₹${room.auction.highBid}.` };
   if (amount > player.money) return { error: 'Not enough money.' };
 
   room.auction.highBid = amount;
@@ -1094,7 +1094,7 @@ export function endAuction(code) {
     mortgaged: false,
   };
 
-  room.log.push(`${winner.name} won auction for space ${auction.spaceId} at $${auction.highBid}`);
+  room.log.push(`${winner.name} won auction for space ${auction.spaceId} at ₹${auction.highBid}`);
 
   return {
     success: true, sold: true,

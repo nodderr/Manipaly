@@ -132,8 +132,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
     addLog(`🎲 ${result.playerName} rolled ${result.die1}+${result.die2} = ${result.total} → ${spaceName}`);
 
     if (result.passedGo) {
-      addLog(`💰 ${result.playerName} passed GO — collected $200`);
-      addToast(`${result.playerName} collected $200!`, 'go');
+      addLog(`💰 ${result.playerName} passed GO — collected ₹200`);
+      addToast(`${result.playerName} collected ₹200!`, 'go');
       showMoneyDelta(result.playerId, +200);
       setGoTrigger((v) => v + 1);
     }
@@ -149,12 +149,12 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
     if (result.landingAction) {
       const action = result.landingAction;
       if (action.type === 'tax') {
-        addLog(`📋 ${result.playerName} paid $${action.amount} in tax`);
-        addToast(`${result.playerName} paid $${action.amount} tax`, 'tax');
+        addLog(`📋 ${result.playerName} paid ₹${action.amount} in tax`);
+        addToast(`${result.playerName} paid ₹${action.amount} tax`, 'tax');
         showMoneyDelta(result.playerId, -action.amount);
       } else if (action.type === 'rent') {
-        addLog(`🏠 ${result.playerName} paid $${action.rent} rent to ${action.ownerName}`);
-        addToast(`${result.playerName} paid $${action.rent} rent to ${action.ownerName}`, 'rent');
+        addLog(`🏠 ${result.playerName} paid ₹${action.rent} rent to ${action.ownerName}`);
+        addToast(`${result.playerName} paid ₹${action.rent} rent to ${action.ownerName}`, 'rent');
         showMoneyDelta(result.playerId, -action.rent);
         showMoneyDelta(action.ownerId, +action.rent);
       } else if (action.type === 'buy_option') {
@@ -183,7 +183,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
           animateMovement(result.playerId, result.newPosition, action.newPosition, () => {});
           result.newPosition = action.newPosition;
           if (action.passedGo) {
-            addLog(`💰 ${result.playerName} passed GO — collected $200`);
+            addLog(`💰 ${result.playerName} passed GO — collected ₹200`);
             showMoneyDelta(result.playerId, +200);
             setGoTrigger((v) => v + 1);
           }
@@ -251,7 +251,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
 
     socket.on('PROPERTY_BOUGHT', (result) => {
       const spaceName = BOARD_SPACES.find((s) => s.id === result.spaceId)?.name || `Space ${result.spaceId}`;
-      addLog(`🏗️ ${result.ownerName} bought ${spaceName} for $${result.price}`);
+      addLog(`🏗️ ${result.ownerName} bought ${spaceName} for ₹${result.price}`);
       addToast(`${result.ownerName} bought ${spaceName}!`, 'buy');
       showMoneyDelta(result.ownerId, -result.price);
       setBuyOption(null);
@@ -272,8 +272,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
 
     // ── Jail Events ───────────────────────────────────────────────
     socket.on('JAIL_UPDATE', (result) => {
-      addLog(`🔓 ${result.playerName} paid $50 to get out of jail`);
-      addToast(`${result.playerName} paid $50 bail`, 'tax');
+      addLog(`🔓 ${result.playerName} paid ₹50 to get out of jail`);
+      addToast(`${result.playerName} paid ₹50 bail`, 'tax');
       showMoneyDelta(result.playerId, -50);
     });
 
@@ -291,8 +291,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
           }
         }
       } else if (result.forcedPay) {
-        addLog(`💸 ${result.playerName} forced to pay $50 after 3 failed attempts`);
-        addToast(`${result.playerName} forced to pay $50 bail`, 'tax');
+        addLog(`💸 ${result.playerName} forced to pay ₹50 after 3 failed attempts`);
+        addToast(`${result.playerName} forced to pay ₹50 bail`, 'tax');
         showMoneyDelta(result.playerId, -50);
       } else {
         setDice({ die1: result.die1, die2: result.die2 });
@@ -314,7 +314,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
     // ── Mortgage ──────────────────────────────────────────────────
     socket.on('PROPERTY_MORTGAGED', (result) => {
       const spaceName = BOARD_SPACES.find((s) => s.id === result.spaceId)?.name || `Space ${result.spaceId}`;
-      addLog(`🏚️ ${result.playerName} mortgaged ${spaceName} for $${result.mortgageValue}`);
+      addLog(`🏚️ ${result.playerName} mortgaged ${spaceName} for ₹${result.mortgageValue}`);
       addToast(`${result.playerName} mortgaged ${spaceName}`, 'info');
       showMoneyDelta(result.playerId, +result.mortgageValue);
     });
@@ -358,14 +358,14 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
 
     socket.on('AUCTION_BID', (result) => {
       setAuction((prev) => prev ? { ...prev, highBid: result.highBid, highBidder: result.highBidder, highBidderName: result.highBidderName } : prev);
-      addLog(`💰 ${result.highBidderName} bid $${result.highBid}`);
+      addLog(`💰 ${result.highBidderName} bid ₹${result.highBid}`);
     });
 
     socket.on('AUCTION_ENDED', (result) => {
       setAuction(null);
       if (result.sold) {
         const spaceName = BOARD_SPACES.find((s) => s.id === result.spaceId)?.name || 'Property';
-        addLog(`🔨 ${result.winnerName} won the auction for ${spaceName} at $${result.winningBid}`);
+        addLog(`🔨 ${result.winnerName} won the auction for ${spaceName} at ₹${result.winningBid}`);
         addToast(`${result.winnerName} won the auction!`, 'buy');
         showMoneyDelta(result.winnerId, -result.winningBid);
       } else {
@@ -603,8 +603,8 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
                 </div>
                 {landedDetail && (
                   <div className="landed-card__stats">
-                    <span className="landed-card__price">${landedDetail.price}</span>
-                    <span className="landed-card__rent">Rent ${landedDetail.rent}</span>
+                    <span className="landed-card__price">₹{landedDetail.price}</span>
+                    <span className="landed-card__rent">Rent ₹{landedDetail.rent}</span>
                   </div>
                 )}
                 <span className="landed-card__by">{landedSpace.playerName}</span>
@@ -619,7 +619,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
               <div className="panel__jail-actions anim-fade-in">
                 <div className="panel__jail-label">🔒 You're in Jail!</div>
                 <div className="panel__jail-btns">
-                  <button className="btn btn--jail-pay" onClick={handlePayJailFine}>Pay $50 Bail</button>
+                  <button className="btn btn--jail-pay" onClick={handlePayJailFine}>Pay ₹50 Bail</button>
                   <button className="btn btn--jail-roll" onClick={handleRollForJail}>🎲 Roll Doubles</button>
                 </div>
               </div>
@@ -634,7 +634,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
             {buyOption && (
               <div className="panel__buy anim-fade-in">
                 <p className="panel__buy-title">Buy {buyOption.name}?</p>
-                <p className="panel__buy-price">${buyOption.price}</p>
+                <p className="panel__buy-price">₹{buyOption.price}</p>
                 <div className="panel__buy-btns">
                   <button className="btn btn--buy" onClick={handleBuy}>Buy</button>
                   <button className="btn btn--pass" onClick={handlePass}>Pass (Auction)</button>
@@ -706,7 +706,7 @@ export default function Board({ initialState, roomCode, playerId, onReturnToLobb
                   </span>
                   <span className="panel__player-props">{countProps(p.id)} 🏠</span>
                   <span className="panel__player-money">
-                    ${p.money}
+                    ₹{p.money}
                     {moneyDeltas[p.id] !== undefined && (
                       <span className={`money-delta ${moneyDeltas[p.id] >= 0 ? 'money-delta--up' : 'money-delta--down'}`}>
                         {moneyDeltas[p.id] >= 0 ? '+' : ''}{moneyDeltas[p.id]}

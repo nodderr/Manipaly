@@ -46,7 +46,7 @@ export default function PropertyCard({ spaceId, owner, myId, onClose, onBuild, o
         <div className="propcard__body">
           <div className="propcard__row propcard__row--price">
             <span>Price</span>
-            <span className="propcard__val">${detail.price}</span>
+            <span className="propcard__val">₹{detail.price}</span>
           </div>
 
           <div className="propcard__divider" />
@@ -56,32 +56,32 @@ export default function PropertyCard({ spaceId, owner, myId, onClose, onBuild, o
             <>
               <div className={`propcard__row ${currentRentIndex === 0 && isMine ? 'propcard__row--active-rent' : ''}`}>
                 <span>Rent (no houses)</span>
-                <span className="propcard__val">${detail.rent}</span>
+                <span className="propcard__val">₹{detail.rent}</span>
               </div>
               <div className={`propcard__row ${currentRentIndex === 1 && isMine ? 'propcard__row--active-rent' : ''}`}>
                 <span>With 1 House 🏠</span>
-                <span className="propcard__val">${detail.rent1}</span>
+                <span className="propcard__val">₹{detail.rent1}</span>
               </div>
               <div className={`propcard__row ${currentRentIndex === 2 && isMine ? 'propcard__row--active-rent' : ''}`}>
                 <span>With 2 Houses</span>
-                <span className="propcard__val">${detail.rent2}</span>
+                <span className="propcard__val">₹{detail.rent2}</span>
               </div>
               <div className={`propcard__row ${currentRentIndex === 3 && isMine ? 'propcard__row--active-rent' : ''}`}>
                 <span>With 3 Houses</span>
-                <span className="propcard__val">${detail.rent3}</span>
+                <span className="propcard__val">₹{detail.rent3}</span>
               </div>
               <div className={`propcard__row ${currentRentIndex === 4 && isMine ? 'propcard__row--active-rent' : ''}`}>
                 <span>With 4 Houses</span>
-                <span className="propcard__val">${detail.rent4}</span>
+                <span className="propcard__val">₹{detail.rent4}</span>
               </div>
               <div className={`propcard__row ${currentRentIndex === 5 && isMine ? 'propcard__row--active-rent' : ''} propcard__row--highlight`}>
                 <span>With Hotel 🏨</span>
-                <span className="propcard__val">${detail.rentHotel}</span>
+                <span className="propcard__val">₹{detail.rentHotel}</span>
               </div>
               <div className="propcard__divider" />
               <div className="propcard__row">
                 <span>House Cost</span>
-                <span className="propcard__val">${detail.houseCost} each</span>
+                <span className="propcard__val">₹{detail.houseCost} each</span>
               </div>
             </>
           )}
@@ -89,10 +89,10 @@ export default function PropertyCard({ spaceId, owner, myId, onClose, onBuild, o
           {/* Railroad tiers */}
           {detail.isRailroad && (
             <>
-              <div className="propcard__row"><span>1 RR owned</span><span className="propcard__val">${detail.rent}</span></div>
-              <div className="propcard__row"><span>2 RRs owned</span><span className="propcard__val">${detail.rent2rr}</span></div>
-              <div className="propcard__row"><span>3 RRs owned</span><span className="propcard__val">${detail.rent3rr}</span></div>
-              <div className="propcard__row propcard__row--highlight"><span>4 RRs owned</span><span className="propcard__val">${detail.rent4rr}</span></div>
+              <div className="propcard__row"><span>1 RR owned</span><span className="propcard__val">₹{detail.rent}</span></div>
+              <div className="propcard__row"><span>2 RRs owned</span><span className="propcard__val">₹{detail.rent2rr}</span></div>
+              <div className="propcard__row"><span>3 RRs owned</span><span className="propcard__val">₹{detail.rent3rr}</span></div>
+              <div className="propcard__row propcard__row--highlight"><span>4 RRs owned</span><span className="propcard__val">₹{detail.rent4rr}</span></div>
             </>
           )}
 
@@ -108,7 +108,7 @@ export default function PropertyCard({ spaceId, owner, myId, onClose, onBuild, o
 
           <div className="propcard__row">
             <span>Mortgage Value</span>
-            <span className="propcard__val">${detail.mortgage}</span>
+            <span className="propcard__val">₹{detail.mortgage}</span>
           </div>
 
           {/* Owner info */}
@@ -135,12 +135,12 @@ export default function PropertyCard({ spaceId, owner, myId, onClose, onBuild, o
               )}
               {!isMortgaged && houses === 0 && (
                 <button className="propcard__action-btn propcard__action-btn--mortgage" onClick={() => { onMortgage(spaceId); onClose(); }}>
-                  🏚️ Mortgage ($+{detail.mortgage})
+                  🏚️ Mortgage (₹+{detail.mortgage})
                 </button>
               )}
               {isMortgaged && (
                 <button className="propcard__action-btn propcard__action-btn--unmortgage" onClick={() => { onUnmortgage(spaceId); onClose(); }}>
-                  🏠 Unmortgage ($-{Math.ceil(detail.mortgage * 1.1)})
+                  🏠 Unmortgage (₹-{Math.ceil(detail.mortgage * 1.1)})
                 </button>
               )}
             </div>
