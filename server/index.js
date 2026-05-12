@@ -10,11 +10,12 @@ import { registerGameHandlers } from './game.js';
 const app = express();
 const httpServer = createServer(app);
 
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const CLIENT_ORIGINS = (process.env.CLIENT_URL || 'http://localhost:5173')
+  .split(',').map((u) => u.trim()).filter(Boolean);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: [CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: [...CLIENT_ORIGINS, 'http://localhost:5173', 'http://127.0.0.1:5173'],
     methods: ['GET', 'POST'],
   },
 });
